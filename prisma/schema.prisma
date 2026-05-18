@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -11,4 +5,54 @@ generator client {
 datasource db {
   provider = "sqlserver"
   url      = env("DATABASE_URL")
+}
+
+// ===========================================
+// DEPARTMENT
+// ===========================================
+model Department {
+	id					Int				@id	@default(autoincrement())
+	name				String			@unique
+
+	users				User[]
+
+	createdAt			DateTime		@default(now())
+	updatedAt			DateTime		@updatedAt
+}
+
+// ===========================================
+// USER & AUTHENTICATION
+// ===========================================
+model User {
+	id					Int				@id @default(autoincrement())
+	name				String
+	username			String			@unique
+	password			String
+	role				String			@default("Requester")
+
+	departmentId		Int?
+	department			Department?		@relation(fields: [departmentId], references: [id])
+
+	requests			TestRequest[]	@relation("RequestedBy")
+	assignedRequests 	TestRequest[]	@relation("AssignedTo")
+
+	createdAt			DateTime		@default(now())
+	updatedAt			DateTime		@updatedAt
+}
+
+// ===========================================
+// TEST REQUESTS	
+// ===========================================
+model TestRequest {
+	id					Int				@id	@default(autoincrement())
+	samplePartName		String
+
+	requesterId			Int
+	requester			User			@relation("RequestedBy", fields: [requesterId], references: [id], onUpdate: NoAction, onDelete: NoAction)
+
+	assignedToId		Int?
+	assignedTo			User?			@relation("AssignedTo", fields: [assignedToId], references: [id], onUpdate: NoAction, onDelete: NoAction)
+
+	createdAt			DateTime		@default(now())
+	updatedAt			DateTime		@updatedAt
 }

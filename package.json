@@ -1,5 +1,5 @@
 {
-	"name": "backend-with-express-and-typescript",
+	"name": "dixon-lab-request-testing-approval-management-system",
 	"version": "1.0.0",
 	"main": "index.js",
 	"scripts": {
@@ -10,7 +10,6 @@
 	"author": "ameen-sid",
 	"license": "ISC",
 	"description": "",
-	"type": "module",
 	"dependencies": {
 		"dotenv": "^17.4.2",
 		"express": "^5.2.1",

@@ -6,6 +6,7 @@ export interface IUserRepository {
 	getUsers(where: any, sortBy: string, sortOrder: string, skip: number, limit: number): Promise<Omit<User, 'password' | 'updatedAt'>[]>;
 	updateUser(id: number, updateData: Omit<User, 'id' | 'createdAt' | 'updatedAt'>): Promise<User | null>;	
 	deleteUser(id: number): Promise<Boolean>;
+	getUserByUsername(username: string): Promise<User | null>;
 }
 
 export class UserRepository implements IUserRepository {
@@ -39,5 +40,9 @@ export class UserRepository implements IUserRepository {
 
 	async deleteUser(id: number): Promise<Boolean> {
 		return await prisma.user.delete({ where: { id } }) ? true : false;
+	}
+
+	async getUserByUsername(username: string): Promise<User | null> {
+		return await prisma.user.findUnique({ where: { username } });
 	}
 }

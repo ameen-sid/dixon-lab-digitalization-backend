@@ -1,5 +1,6 @@
 import { prisma } from '../configs/prisma.config';
 import { Department } from '@prisma/client';
+import { ConflictError, NotFoundError } from '../utils/errors/app.error';
 
 export interface IDepartmentRepository {
 	addDepartment(name: string): Promise<Department>;
@@ -30,6 +31,13 @@ export class DepartmentRepository implements IDepartmentRepository {
 	}
 
 	async deleteDepartment(id: number): Promise<Boolean> {
-		return await prisma.department.delete({ where: { id } }) ? true : false;
+		try {
+			await prisma.department.delete({ where: { id } });
+			return true;
+		} catch (error: any) {
+			if (error.code === 'P2025') throw new NotFoundError('Department not found');
+			if (error.code === 'P2003') throw new ConflictError('Cannot delete department because user are assigned to it');
+			throw error;
+		}
 	}
 }

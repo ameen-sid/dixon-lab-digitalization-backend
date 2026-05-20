@@ -55,8 +55,8 @@ export class UserController {
 				{ username: { contains: search } }
 			];
 		}
-		if (role)	where.role = role;
-		if (departmentId)	where.departmentId = parseInt(departmentId);
+		if (role) where.role = role;
+		if (departmentId) where.departmentId = parseInt(departmentId);
 
 		const users = await this.userService.getUsers(where, sortBy, sortOrder, skip, limit);
 		logger.info('Fetched Users Successfully', { users: users });
@@ -94,8 +94,8 @@ export class UserController {
 			}
 
 			const finalRole = targetRole !== undefined ? targetRole : currentUser.role;
-			const finalDeptId = targetDeptId !== undefined 
-				? (targetDeptId ? parseInt(targetDeptId.toString()) : null) 
+			const finalDeptId = targetDeptId !== undefined
+				? (targetDeptId ? parseInt(targetDeptId.toString()) : null)
 				: currentUser.departmentId;
 
 			if (!['Admin', 'CEO', 'ceo'].includes(finalRole) && !finalDeptId) {
@@ -109,12 +109,12 @@ export class UserController {
 
 		const updatedUser = await this.userService.updateUser(Number(req.params.id), updateData);
 		if (!updatedUser) {
-      		res.status(404).json({
-        		success: false,
-          		message: 'User not found',
-        	});
-        	return;
-    	}
+			res.status(404).json({
+				success: false,
+				message: 'User not found',
+			});
+			return;
+		}
 
 		const { password: _, ...userWithoutPassword } = updatedUser;
 		logger.info('User Updated Successfully', { updatedUser: userWithoutPassword });

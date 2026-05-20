@@ -9,7 +9,6 @@ import logger from '../configs/logger.config';
 export const validateRequestBody = (schema: z.Schema) => {
 	return async (req: Request, res: Response, next: NextFunction) => {
 		try {
-			 
 			logger.info('Validating request body');
 			req.body = await schema.parseAsync(req.body);
 			logger.info('Request body is valid');
@@ -33,9 +32,8 @@ export const validateRequestBody = (schema: z.Schema) => {
 export const validateQueryParams = (schema: z.Schema) => {
 	return async (req: Request, res: Response, next: NextFunction) => {
 		try {
-			
 			logger.info('Validating query params');
-			req.query = await schema.parseAsync(req.query) as any;
+			await schema.parseAsync(req.query);
 			logger.info('Query params are valid');
 			next();
 		} catch (error) {
@@ -57,9 +55,8 @@ export const validateQueryParams = (schema: z.Schema) => {
 export const validateRequestParams = (schema: z.Schema) => {
 	return async (req: Request, res: Response, next: NextFunction) => {
 		try {
-			
 			logger.info('Validating request params');
-			req.params = await schema.parseAsync(req.params) as any;
+			await schema.parseAsync(req.params);
 			logger.info('Request params are valid');
 			next();
 		} catch (error) {

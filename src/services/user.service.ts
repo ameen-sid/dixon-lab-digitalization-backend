@@ -1,11 +1,11 @@
 import { User } from '@prisma/client';
 import { IUserRepository } from '../repositories/user.repository';
-import { BadRequestError } from '../utils/errors/app.error';
+import { BadRequestError, ConflictError } from '../utils/errors/app.error';
 
 export interface IUserService {
 	createUser(user: Omit<User, 'id' | 'createdAt' | 'updatedAt'>): Promise<User>;
 	getUsers(where: any, sortBy: string, sortOrder: string, skip: number, limit: number): Promise<Omit<User, 'password' | 'updatedAt'>[]>;
-	updateUser(id: number, updateData: Omit<User, 'id' | 'createdAt' | 'updatedAt'>): Promise<User | null>;
+	updateUser(id: number, updateData: Partial<Omit<User, 'id' | 'createdAt' | 'updatedAt'>>): Promise<User | null>;
 	deleteUser(id: number): Promise<Boolean>;
 }
 
@@ -18,6 +18,10 @@ export class UserService implements IUserService {
 
 	async createUser(user: Omit<User, 'id' | 'createdAt' | 'updatedAt'>): Promise<User> {
 		if (!user) throw new BadRequestError('User details are required');
+
+		const existingUser = await this.userRepository.getUserByUsername(user.username);
+		if (existingUser) throw new ConflictError(`Username '${user.username}' is already taken`);
+
 		return await this.userRepository.createUser(user);
 	}
 
@@ -25,7 +29,7 @@ export class UserService implements IUserService {
 		return await this.userRepository.getUsers(where, sortBy, sortOrder, skip, limit);
 	}
 
-	async updateUser(id: number, updateData: Omit<User, 'id' | 'createdAt' | 'updatedAt'>): Promise<User | null> {
+	async updateUser(id: number, updateData: Partial<Omit<User, 'id' | 'createdAt' | 'updatedAt'>>): Promise<User | null> {
 		if (!updateData) throw new BadRequestError('User details are required');
 		return await this.userRepository.updateUser(id, updateData);
 	}

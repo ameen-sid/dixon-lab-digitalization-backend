@@ -4,7 +4,7 @@ import { User } from '@prisma/client';
 export interface IUserRepository {
 	createUser(user: Omit<User, 'id' | 'createdAt' | 'updatedAt'>): Promise<User>;
 	getUsers(where: any, sortBy: string, sortOrder: string, skip: number, limit: number): Promise<Omit<User, 'password' | 'updatedAt'>[]>;
-	updateUser(id: number, updateData: Omit<User, 'id' | 'createdAt' | 'updatedAt'>): Promise<User | null>;	
+	updateUser(id: number, updateData: Partial<Omit<User, 'id' | 'createdAt' | 'updatedAt'>>): Promise<User | null>;	
 	deleteUser(id: number): Promise<Boolean>;
 	getUserByUsername(username: string): Promise<User | null>;
 }
@@ -31,7 +31,7 @@ export class UserRepository implements IUserRepository {
 		});
 	}
 
-	async updateUser(id: number, updateData: Omit<User, 'id' | 'createdAt' | 'updatedAt'>): Promise<User | null> {
+	async updateUser(id: number, updateData: Partial<Omit<User, 'id' | 'createdAt' | 'updatedAt'>>): Promise<User | null> {
 		return await prisma.user.update({
 			where: { id },
 			data: updateData

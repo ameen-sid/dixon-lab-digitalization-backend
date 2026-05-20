@@ -1,17 +1,17 @@
 import { Request, Response, NextFunction } from 'express';
-import { ZodObject } from 'zod';
+import { z } from 'zod';
 import logger from '../configs/logger.config';
 
 /**
  * @param schema - zod schema to validate the request body
  * @returns - middleware function to validate the request body
  */
-export const validateRequestBody = (schema: ZodObject) => {
+export const validateRequestBody = (schema: z.Schema) => {
 	return async (req: Request, res: Response, next: NextFunction) => {
 		try {
 			 
 			logger.info('Validating request body');
-			await schema.parseAsync(req.body);
+			req.body = await schema.parseAsync(req.body);
 			logger.info('Request body is valid');
 			next();
 		} catch (error) {
@@ -30,12 +30,12 @@ export const validateRequestBody = (schema: ZodObject) => {
  * @param schema - zod schema to validate the query params
  * @returns - middleware function to validate the query params
  */
-export const validateQueryParams = (schema: ZodObject) => {
+export const validateQueryParams = (schema: z.Schema) => {
 	return async (req: Request, res: Response, next: NextFunction) => {
 		try {
 			
 			logger.info('Validating query params');
-			await schema.parseAsync(req.query);
+			req.query = await schema.parseAsync(req.query) as any;
 			logger.info('Query params are valid');
 			next();
 		} catch (error) {
@@ -54,12 +54,12 @@ export const validateQueryParams = (schema: ZodObject) => {
  * @param schema - zod schema to validate the request params
  * @returns - middleware function to validate the request param
  */
-export const validateRequestParams = (schema: ZodObject) => {
+export const validateRequestParams = (schema: z.Schema) => {
 	return async (req: Request, res: Response, next: NextFunction) => {
 		try {
 			
 			logger.info('Validating request params');
-			await schema.parseAsync(req.params);
+			req.params = await schema.parseAsync(req.params) as any;
 			logger.info('Request params are valid');
 			next();
 		} catch (error) {

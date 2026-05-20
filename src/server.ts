@@ -2,7 +2,7 @@ import express from 'express';
 import { serverConfig } from './configs';
 import v1Router from './routers/v1/index.router';
 import v2Router from './routers/v2/index.router';
-import { appErrorHandler, genericErrorHandler } from './middlewares/error.middleware';
+import { appErrorHandler, prismaErrorHandler, genericErrorHandler } from './middlewares/error.middleware';
 import { attachCorrelationIdMiddleware } from './middlewares/correlation.middleware';
 import logger from './configs/logger.config';
 
@@ -17,6 +17,7 @@ app.use('/api/v2', v2Router);
 
 // Add the error handler middleware
 app.use(appErrorHandler);
+app.use(prismaErrorHandler);
 app.use(genericErrorHandler);
 
 app.listen(serverConfig.PORT, async () => {

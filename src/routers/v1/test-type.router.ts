@@ -2,6 +2,7 @@ import express from 'express';
 import { TestTypeFactory } from '../../factories/test-type.factory';
 import { createTestTypeSchema, updateTestTypeSchema, testTypeQuerySchema, testTypeIdParamSchema } from '../../validators/test-type.validator';
 import { validateRequestBody, validateQueryParams, validateRequestParams } from '../../validators';
+import { asyncHandler } from '../../utils/helpers/async.handler';
 
 const testTypeRouter = express.Router();
 
@@ -10,26 +11,26 @@ const testTypeController = TestTypeFactory.getTestTypeController();
 testTypeRouter.post(
 	'/',
 	validateRequestBody(createTestTypeSchema),
-	testTypeController.addTestType
+	asyncHandler(testTypeController.addTestType)
 );
 
 testTypeRouter.get(
 	'/',
 	validateQueryParams(testTypeQuerySchema),
-	testTypeController.getTestTypes
+	asyncHandler(testTypeController.getTestTypes)
 );
 
 testTypeRouter.patch(
 	'/:id',
 	validateRequestParams(testTypeIdParamSchema),
 	validateRequestBody(updateTestTypeSchema),
-	testTypeController.updateTestType
+	asyncHandler(testTypeController.updateTestType)
 );
 
 testTypeRouter.delete(
 	'/:id',
 	validateRequestParams(testTypeIdParamSchema),
-	testTypeController.deleteTestType
+	asyncHandler(testTypeController.deleteTestType)
 );
 
 export default testTypeRouter;

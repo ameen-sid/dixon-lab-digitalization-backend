@@ -1,6 +1,5 @@
 import { TestType } from '@prisma/client';
 import { prisma } from '../configs/prisma.config';
-import { ConflictError, NotFoundError } from '../utils/errors/app.error';
 
 export interface ITestTypeRepository {
 	addTestType(name: string): Promise<TestType>;
@@ -31,13 +30,6 @@ export class TestTypeRepository implements ITestTypeRepository {
 	}
 
 	async deleteTestType(id: number): Promise<Boolean> {
-		try {
-			await prisma.testType.delete({ where: { id } });
-			return true;
-		} catch (error: any) {
-			if (error.code === 'P2025') throw new NotFoundError('Test type not found');
-			if (error.code === 'P2003') throw new ConflictError('Cannot delete test type because test plans are assigned to it');
-			throw error;
-		}
+		return await prisma.testType.delete({ where: { id } }) ? true : false;
 	}
 }

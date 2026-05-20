@@ -41,6 +41,96 @@ model User {
 }
 
 // ===========================================
+// TEST TYPES	
+// ===========================================
+model TestType {
+	id					Int				@id @default(autoincrement())
+	name				String			@unique
+
+	categories			TestCategory[]
+	protocols			TestProtocol[]
+	testPlans			TestPlan[]
+
+	createdAt			DateTime		@default(now())
+	updatedAt			DateTime		@updatedAt
+}
+
+// ===========================================
+// TEST CATEGORIES
+// ===========================================
+model TestCategory {
+	id					Int				@id	@default(autoincrement())
+	name				String			@unique
+
+	testTypeId			Int?
+	testType			TestType?		@relation(fields: [testTypeId], references: [id])
+
+	protocols			TestProtocol[]
+	testPlans			TestPlan[]
+
+	createdAt			DateTime		@default(now())
+	updatedAt			DateTime		@updatedAt
+}
+
+// ===========================================
+// TEST PROTOCOLS
+// ===========================================
+model TestProtocol {
+	id					Int				@id	@default(autoincrement())
+	name				String
+	productType			String			@default("SATL")
+	testMethod			String			@db.NVarChar(Max)
+	judgementCriteria	String			@db.NVarChar(Max)
+
+	testTypeId			Int?
+	testType			TestType?		@relation(fields: [testTypeId], references: [id], onUpdate: NoAction, onDelete: NoAction)
+
+	testCategoryId		Int?
+	testCategory		TestCategory?	@relation(fields: [testCategoryId], references: [id], onUpdate: NoAction, onDelete: NoAction)
+
+	testPlans			TestPlan[]
+
+	createdAt			DateTime		@default(now())
+	updatedAt			DateTime		@updatedAt
+}
+
+// ===========================================
+// PRODUCT/PART NAMES
+// ===========================================
+model ProductPart {
+	id					Int				@id @default(autoincrement())
+	name				String			@unique
+	partNo				String?
+
+	createdAt			DateTime		@default(now())
+	updatedAt			DateTime		@updatedAt
+}
+
+// ===========================================
+// SUPPLIER/CUSTOMER
+// ===========================================
+model SupplierCustomer {
+	id					Int				@id @default(autoincrement())
+	name				String			@unique
+
+	createdAt			DateTime		@default(now())
+	updatedAt			DateTime		@updatedAt
+}
+
+// ===========================================
+// TESTING EQUIPMENTS
+// ===========================================
+model TestingEquipment {
+	id					Int				@id @default(autoincrement())
+	name				String			@unique
+	calibrationDueDate	DateTime?
+	status				String			@default("ACTIVE")
+
+	createdAt			DateTime		@default(now())
+	updatedAt			DateTime		@updatedAt
+}
+
+// ===========================================
 // TEST REQUESTS	
 // ===========================================
 model TestRequest {
@@ -52,6 +142,25 @@ model TestRequest {
 
 	assignedToId		Int?
 	assignedTo			User?			@relation("AssignedTo", fields: [assignedToId], references: [id], onUpdate: NoAction, onDelete: NoAction)
+
+	createdAt			DateTime		@default(now())
+	updatedAt			DateTime		@updatedAt
+}
+
+// ===========================================
+// TEST PLANS
+// ===========================================
+model TestPlan {
+	id					Int				@id @default(autoincrement())
+
+	testTypeId			Int
+	testType			TestType		@relation(fields: [testTypeId], references: [id], onUpdate: NoAction, onDelete: NoAction)
+
+	testCategoryId		Int
+	testCategory		TestCategory	@relation(fields: [testCategoryId], references: [id], onUpdate: NoAction, onDelete: NoAction)
+
+	testProtocolId		Int
+	testProtocol		TestProtocol	@relation(fields: [testProtocolId], references: [id], onUpdate: NoAction, onDelete: NoAction)
 
 	createdAt			DateTime		@default(now())
 	updatedAt			DateTime		@updatedAt

@@ -60,7 +60,7 @@ model TestType {
 // ===========================================
 model TestCategory {
 	id					Int				@id	@default(autoincrement())
-	name				String			@unique
+	name				String
 
 	testTypeId			Int?
 	testType			TestType?		@relation(fields: [testTypeId], references: [id])
@@ -70,6 +70,8 @@ model TestCategory {
 
 	createdAt			DateTime		@default(now())
 	updatedAt			DateTime		@updatedAt
+
+	@@unique([name, testTypeId])
 }
 
 // ===========================================

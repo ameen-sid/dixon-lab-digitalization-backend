@@ -11,11 +11,7 @@ export class TestingEquipmentController {
 
 	addTestingEquipment = async (req: Request, res: Response, next: NextFunction) => {
 		logger.info('Creating Testing Equipment', { body: req.body });
-		const newEquipment = await this.testingEquipmentService.addTestingEquipment(
-			req.body.name,
-			req.body.calibrationDueDate,
-			req.body.status
-		);
+		const newEquipment = await this.testingEquipmentService.addTestingEquipment(req.body.name, req.body.calibrationDueDate, req.body.status);
 		logger.info('Testing Equipment Created Successfully', { newEquipment });
 		res.status(201).json({
 			success: true,
@@ -49,12 +45,7 @@ export class TestingEquipmentController {
 
 	updateTestingEquipment = async (req: Request, res: Response, next: NextFunction) => {
 		logger.info('Updating Testing Equipment', { body: req.body, id: req.params.id });
-		const updatedEquipment = await this.testingEquipmentService.updateTestingEquipment(
-			Number(req.params.id),
-			req.body.name,
-			req.body.calibrationDueDate,
-			req.body.status
-		);
+		const updatedEquipment = await this.testingEquipmentService.updateTestingEquipment(Number(req.params.id), req.body.name, req.body.calibrationDueDate, req.body.status);
 		logger.info('Updated Testing Equipment Successfully', { updatedEquipment });
 		res.status(200).json({
 			success: true,

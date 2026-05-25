@@ -13,7 +13,7 @@ export class TestingEquipmentController {
 		logger.info('Creating Testing Equipment', { body: req.body });
 		const newEquipment = await this.testingEquipmentService.addTestingEquipment(
 			req.body.name,
-			req.body.calibrationDueDate ? new Date(req.body.calibrationDueDate) : null,
+			req.body.calibrationDueDate,
 			req.body.status
 		);
 		logger.info('Testing Equipment Created Successfully', { newEquipment });
@@ -52,7 +52,7 @@ export class TestingEquipmentController {
 		const updatedEquipment = await this.testingEquipmentService.updateTestingEquipment(
 			Number(req.params.id),
 			req.body.name,
-			req.body.calibrationDueDate !== undefined ? (req.body.calibrationDueDate ? new Date(req.body.calibrationDueDate) : null) : undefined,
+			req.body.calibrationDueDate,
 			req.body.status
 		);
 		logger.info('Updated Testing Equipment Successfully', { updatedEquipment });

@@ -125,7 +125,7 @@ model SupplierCustomer {
 model TestingEquipment {
 	id					Int				@id @default(autoincrement())
 	name				String			@unique
-	calibrationDueDate	DateTime?
+	calibrationDueDate	DateTime
 	status				String			@default("ACTIVE")
 
 	createdAt			DateTime		@default(now())

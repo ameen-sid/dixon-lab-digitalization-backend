@@ -8,6 +8,7 @@ import testCategoryRouter from './test-category.router';
 import testProtocolRouter from './test-protocol.router';
 import productPartRouter from './product-part.router';
 import supplierCustomerRouter from './supplier-customer.router';
+import testingEquipmentRouter from './testing-equipment.router';
 import { authenticateToken, requireRole } from '../../middlewares/auth.middleware';
 
 const v1Router = express.Router();
@@ -21,5 +22,6 @@ v1Router.use('/test-categories', authenticateToken, requireRole(['Admin']), test
 v1Router.use('/test-protocols', authenticateToken, requireRole(['Admin']), testProtocolRouter);
 v1Router.use('/product-parts', authenticateToken, requireRole(['Admin']), productPartRouter);
 v1Router.use('/supplier-customers', authenticateToken, requireRole(['Admin']), supplierCustomerRouter);
+v1Router.use('/testing-equipments', authenticateToken, requireRole(['Admin']), testingEquipmentRouter);
 
 export default v1Router;

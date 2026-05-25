@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 export const createSupplierCustomerSchema = z.object({
-	name: z.string().min(1, 'Product part name cannot be empty').trim()
+	name: z.string().min(1, 'Supplier customer name cannot be empty').trim()
 });
 
 export const updateSupplierCustomerSchema = createSupplierCustomerSchema.partial();

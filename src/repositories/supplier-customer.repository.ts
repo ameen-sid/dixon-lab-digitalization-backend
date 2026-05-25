@@ -27,6 +27,6 @@ export class SupplierCustomerRepository implements ISupplierCustomerRepository {
 	}
 
 	async deleteSupplierCustomer(id: number): Promise<Boolean> {
-		return await prisma.productPart.delete({ where: { id } }) ? true : false;
+		return await prisma.supplierCustomer.delete({ where: { id } }) ? true : false;
 	}
 }

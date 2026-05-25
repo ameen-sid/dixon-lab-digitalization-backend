@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 export const createProductPartSchema = z.object({
 	name: z.string().min(1, 'Product part name cannot be empty').trim(),
-	partNo: z.string().min(1, 'Product part no cannot be empty').trim()
+	partNo: z.string().trim().nullish()
 });
 
 export const updateProductPartSchema = createProductPartSchema.partial();

@@ -1,4 +1,5 @@
 import express from 'express';
+import path from 'path';
 import { serverConfig } from './configs';
 import v1Router from './routers/v1/index.router';
 import v2Router from './routers/v2/index.router';
@@ -9,6 +10,7 @@ import logger from './configs/logger.config';
 const app = express();
 
 app.use(express.json());
+app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 
 // Registering all the routers and their corresponding routes without app server object.
 app.use(attachCorrelationIdMiddleware);

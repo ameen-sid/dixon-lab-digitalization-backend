@@ -2,14 +2,14 @@ import { TestingEquipment } from '@prisma/client';
 import { prisma } from '../configs/prisma.config';
 
 export interface ITestingEquipmentRepository {
-	addTestingEquipment(name: string, calibrationDueDate: Date | null, status?: string): Promise<TestingEquipment>;
+	addTestingEquipment(name: string, calibrationDueDate: Date, status?: string): Promise<TestingEquipment>;
 	getTestingEquipments(where: any, sortBy: string, sortOrder: string, skip: number, limit: number): Promise<TestingEquipment[]>;
-	updateTestingEquipment(id: number, name?: string, calibrationDueDate?: Date | null, status?: string): Promise<TestingEquipment | null>;
+	updateTestingEquipment(id: number, name?: string, calibrationDueDate?: Date, status?: string): Promise<TestingEquipment | null>;
 	deleteTestingEquipment(id: number): Promise<Boolean>;
 }
 
 export class TestingEquipmentRepository implements ITestingEquipmentRepository {
-	async addTestingEquipment(name: string, calibrationDueDate: Date | null, status?: string): Promise<TestingEquipment> {
+	async addTestingEquipment(name: string, calibrationDueDate: Date, status?: string): Promise<TestingEquipment> {
 		return await prisma.testingEquipment.create({ data: { name, calibrationDueDate, status } });
 	}
 
@@ -22,7 +22,7 @@ export class TestingEquipmentRepository implements ITestingEquipmentRepository {
 		});
 	}
 
-	async updateTestingEquipment(id: number, name?: string, calibrationDueDate?: Date | null, status?: string): Promise<TestingEquipment | null> {
+	async updateTestingEquipment(id: number, name?: string, calibrationDueDate?: Date, status?: string): Promise<TestingEquipment | null> {
 		return await prisma.testingEquipment.update({ where: { id }, data: { name, calibrationDueDate, status } });
 	}
 

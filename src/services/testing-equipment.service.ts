@@ -3,9 +3,9 @@ import { ITestingEquipmentRepository } from '../repositories/testing-equipment.r
 import { BadRequestError } from '../utils/errors/app.error';
 
 export interface ITestingEquipmentService {
-	addTestingEquipment(name: string, calibrationDueDate: Date | null, status?: string): Promise<TestingEquipment>;
+	addTestingEquipment(name: string, calibrationDueDate: Date, status?: string): Promise<TestingEquipment>;
 	getTestingEquipments(where: any, sortBy: string, sortOrder: string, skip: number, limit: number): Promise<TestingEquipment[]>;
-	updateTestingEquipment(id: number, name?: string, calibrationDueDate?: Date | null, status?: string): Promise<TestingEquipment | null>;
+	updateTestingEquipment(id: number, name?: string, calibrationDueDate?: Date, status?: string): Promise<TestingEquipment | null>;
 	deleteTestingEquipment(id: number): Promise<Boolean>;
 }
 
@@ -16,7 +16,7 @@ export class TestingEquipmentService implements ITestingEquipmentService {
 		this.testingEquipmentRepository = testingEquipmentRepository;
 	}
 
-	async addTestingEquipment(name: string, calibrationDueDate: Date | null, status?: string): Promise<TestingEquipment> {
+	async addTestingEquipment(name: string, calibrationDueDate: Date, status?: string): Promise<TestingEquipment> {
 		if (!name) throw new BadRequestError('Testing equipment name is required');
 		return await this.testingEquipmentRepository.addTestingEquipment(name, calibrationDueDate, status);
 	}
@@ -25,7 +25,7 @@ export class TestingEquipmentService implements ITestingEquipmentService {
 		return await this.testingEquipmentRepository.getTestingEquipments(where, sortBy, sortOrder, skip, limit);
 	}
 
-	async updateTestingEquipment(id: number, name?: string, calibrationDueDate?: Date | null, status?: string): Promise<TestingEquipment | null> {
+	async updateTestingEquipment(id: number, name?: string, calibrationDueDate?: Date, status?: string): Promise<TestingEquipment | null> {
 		if (name !== undefined && !name.trim()) throw new BadRequestError('Testing equipment name cannot be empty');
 		return await this.testingEquipmentRepository.updateTestingEquipment(id, name, calibrationDueDate, status);
 	}

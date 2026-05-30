@@ -136,17 +136,53 @@ model TestingEquipment {
 // TEST REQUESTS	
 // ===========================================
 model TestRequest {
-	id					Int				@id	@default(autoincrement())
-	samplePartName		String
+	id                      	Int                     @id	@default(autoincrement())
+	requestId               	String?                 @unique
+	customerNameAddress     	String                  @db.NVarChar(Max)
+	manufacturerNameAddress 	String                  @db.NVarChar(Max)
+	customerContactDetails  	String
+	sampleDescription       	String                  @db.NVarChar(Max)
+	modelNo                 	String
+	familyModel             	String?
+	serialNumber            	String?
+	productRating           	String
+	sampleQty               	Int
+	brandName               	String
+	attachmentMention       	String?
+	witnessRequired         	String                  @default("No")
+	witnessPersonDetails    	String?
+	testMethodRef           	String
+	conformityStatement     	String                  @default("not Required")
+	decisionRule            	String?
+	collectBack             	String                  @default("No")
+	status                  	String                  @default("PENDING_APPROVAL")
+	remarks                 	String?                 @db.NVarChar(Max)
 
-	requesterId			Int
-	requester			User			@relation("RequestedBy", fields: [requesterId], references: [id], onUpdate: NoAction, onDelete: NoAction)
+	requesterId             	Int
+	requester               	User                    @relation("RequestedBy", fields: [requesterId], references: [id], onUpdate: NoAction, onDelete: NoAction)
+	
+	assignedToId            	Int?
+	assignedTo              	User?                   @relation("AssignedTo", fields: [assignedToId], references: [id], onUpdate: NoAction, onDelete: NoAction)
 
-	assignedToId		Int?
-	assignedTo			User?			@relation("AssignedTo", fields: [assignedToId], references: [id], onUpdate: NoAction, onDelete: NoAction)
+	attachments             	TestRequestAttachment[]
 
-	createdAt			DateTime		@default(now())
-	updatedAt			DateTime		@updatedAt
+	createdAt               	DateTime                @default(now())
+	updatedAt               	DateTime                @updatedAt
+}
+
+// ===========================================
+// TEST REQUEST ATTACHMENTS
+// ===========================================
+model TestRequestAttachment {
+	id            		Int         	@id @default(autoincrement())
+	fileName      		String	
+	filePath      		String	
+	fileSize      		Int	
+	testRequestId 		Int	
+	testRequest   		TestRequest 	@relation(fields: [testRequestId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+			
+	createdAt     		DateTime    	@default(now())
+	updatedAt     		DateTime    	@updatedAt
 }
 
 // ===========================================

@@ -1,7 +1,7 @@
 import express from 'express';
 import { TestRequestFactory } from '../../factories/test-request.factory';
 import { asyncHandler } from '../../utils/helpers/async.handler';
-import { upload } from '../../middlewares/upload.middleware';
+import { upload, inspectionUpload } from '../../middlewares/upload.middleware';
 import { validateRequestBody, validateQueryParams, validateRequestParams } from '../../validators';
 import { createTestRequestSchema, updateTestRequestSchema, testRequestQuerySchema, testRequestIdParamSchema } from '../../validators/test-request.validator';
 
@@ -44,6 +44,7 @@ testRequestRouter.patch(
 testRequestRouter.post(
 	'/:id/sample-inspections',
 	validateRequestParams(testRequestIdParamSchema),
+	inspectionUpload.array('images'),
 	asyncHandler(testRequestController.saveSampleInspection)
 );
 

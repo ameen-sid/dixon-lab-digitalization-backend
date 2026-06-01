@@ -7,7 +7,7 @@ export interface ITestRequestService {
 	getTestRequests(where: any, sortBy: string, sortOrder: string, skip: number, limit: number): Promise<TestRequest[]>;
 	getTestRequestById(id: number): Promise<TestRequest & { attachments: TestRequestAttachment[]; sampleInspections: any[] }>;
 	updateTestRequestStatus(id: number, status: string, remarks?: string, assignedToId?: number): Promise<TestRequest | null>;
-	saveSampleInspection(testRequestId: number, data: any): Promise<any>;
+	saveSampleInspection(testRequestId: number, data: any, uploadedFiles?: Express.Multer.File[]): Promise<any>;
 }
 
 export class TestRequestService implements ITestRequestService {
@@ -55,10 +55,14 @@ export class TestRequestService implements ITestRequestService {
 		return await this.testRequestRepository.updateTestRequest(id, updateData);
 	}
 
-	async saveSampleInspection(testRequestId: number, data: any): Promise<any> {
+	async saveSampleInspection(testRequestId: number, data: any, uploadedFiles?: Express.Multer.File[]): Promise<any> {
 		const { prisma } = await import('../configs/prisma.config');
-		const checksStr = JSON.stringify(data.checks);
-		const imagesStr = JSON.stringify(data.images || []);
+		const checksStr = JSON.stringify(data.checks ? JSON.parse(data.checks) : {});
+
+		// Build image paths from newly uploaded files
+		const newImagePaths: string[] = (uploadedFiles || []).map(
+			file => `/uploads/inspection_results/${file.filename}`
+		);
 
 		const existing = await prisma.testSampleInspection.findFirst({
 			where: {
@@ -68,6 +72,15 @@ export class TestRequestService implements ITestRequestService {
 		});
 
 		if (existing) {
+			// Merge existing image paths with newly uploaded ones
+			let existingPaths: string[] = [];
+			try {
+				existingPaths = existing.images ? JSON.parse(existing.images) : [];
+			} catch {
+				existingPaths = [];
+			}
+			const mergedPaths = [...existingPaths, ...newImagePaths];
+
 			return await prisma.testSampleInspection.update({
 				where: { id: existing.id },
 				data: {
@@ -75,7 +88,7 @@ export class TestRequestService implements ITestRequestService {
 					remarks: data.remarks,
 					status: data.status,
 					checks: checksStr,
-					images: imagesStr
+					images: JSON.stringify(mergedPaths)
 				}
 			});
 		} else {
@@ -87,7 +100,7 @@ export class TestRequestService implements ITestRequestService {
 					remarks: data.remarks,
 					status: data.status,
 					checks: checksStr,
-					images: imagesStr
+					images: JSON.stringify(newImagePaths)
 				}
 			});
 		}

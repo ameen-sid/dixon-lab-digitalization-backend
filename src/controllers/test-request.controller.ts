@@ -108,8 +108,9 @@ export class TestRequestController {
 
 	saveSampleInspection = async (req: Request, res: Response, next: NextFunction) => {
 		const testRequestId = Number(req.params.id);
-		logger.info('Saving Sample Inspection Report', { id: testRequestId, body: req.body });
-		const result = await this.testRequestService.saveSampleInspection(testRequestId, req.body);
+		const uploadedFiles = req.files as Express.Multer.File[] | undefined;
+		logger.info('Saving Sample Inspection Report', { id: testRequestId, filesCount: uploadedFiles?.length ?? 0 });
+		const result = await this.testRequestService.saveSampleInspection(testRequestId, req.body, uploadedFiles);
 		logger.info('Saved Sample Inspection Report Successfully', { id: testRequestId, sampleIndex: req.body.sampleIndex });
 		res.status(200).json({
 			success: true,

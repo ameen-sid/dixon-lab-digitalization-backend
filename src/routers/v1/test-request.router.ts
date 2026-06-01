@@ -12,6 +12,12 @@ const testRequestController = TestRequestFactory.getTestRequestController();
 testRequestRouter.post(
 	'/',
 	upload.array('files'),
+	(req, res, next) => {
+		if ((req as any).user?.id) {
+			req.body.requesterId = (req as any).user.id;
+		}
+		next();
+	},
 	validateRequestBody(createTestRequestSchema),
 	asyncHandler(testRequestController.addTestRequest)
 );

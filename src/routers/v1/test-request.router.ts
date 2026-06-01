@@ -41,4 +41,10 @@ testRequestRouter.patch(
 	asyncHandler(testRequestController.updateTestRequestStatus)
 );
 
+testRequestRouter.post(
+	'/:id/sample-inspections',
+	validateRequestParams(testRequestIdParamSchema),
+	asyncHandler(testRequestController.saveSampleInspection)
+);
+
 export default testRequestRouter;

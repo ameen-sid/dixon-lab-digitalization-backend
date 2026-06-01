@@ -5,8 +5,9 @@ import { BadRequestError, NotFoundError } from '../utils/errors/app.error';
 export interface ITestRequestService {
 	addTestRequest(data: CreateTestRequestInput, attachments: { fileName: string; filePath: string; fileSize: number }[]): Promise<TestRequest>;
 	getTestRequests(where: any, sortBy: string, sortOrder: string, skip: number, limit: number): Promise<TestRequest[]>;
-	getTestRequestById(id: number): Promise<TestRequest & { attachments: TestRequestAttachment[] }>;
+	getTestRequestById(id: number): Promise<TestRequest & { attachments: TestRequestAttachment[]; sampleInspections: any[] }>;
 	updateTestRequestStatus(id: number, status: string, remarks?: string, assignedToId?: number): Promise<TestRequest | null>;
+	saveSampleInspection(testRequestId: number, data: any): Promise<any>;
 }
 
 export class TestRequestService implements ITestRequestService {
@@ -37,7 +38,7 @@ export class TestRequestService implements ITestRequestService {
 		return await this.testRequestRepository.getTestRequests(where, sortBy, sortOrder, skip, limit);
 	}
 
-	async getTestRequestById(id: number): Promise<TestRequest & { attachments: TestRequestAttachment[] }> {
+	async getTestRequestById(id: number): Promise<TestRequest & { attachments: TestRequestAttachment[]; sampleInspections: any[] }> {
 		const request = await this.testRequestRepository.getTestRequestById(id);
 		if (!request) throw new NotFoundError('Testing request not found');
 		return request;
@@ -52,5 +53,43 @@ export class TestRequestService implements ITestRequestService {
 		if (assignedToId !== undefined) updateData.assignedToId = assignedToId;
 
 		return await this.testRequestRepository.updateTestRequest(id, updateData);
+	}
+
+	async saveSampleInspection(testRequestId: number, data: any): Promise<any> {
+		const { prisma } = await import('../configs/prisma.config');
+		const checksStr = JSON.stringify(data.checks);
+		const imagesStr = JSON.stringify(data.images || []);
+
+		const existing = await prisma.testSampleInspection.findFirst({
+			where: {
+				testRequestId,
+				sampleIndex: Number(data.sampleIndex)
+			}
+		});
+
+		if (existing) {
+			return await prisma.testSampleInspection.update({
+				where: { id: existing.id },
+				data: {
+					allottedId: data.allottedId,
+					remarks: data.remarks,
+					status: data.status,
+					checks: checksStr,
+					images: imagesStr
+				}
+			});
+		} else {
+			return await prisma.testSampleInspection.create({
+				data: {
+					testRequestId,
+					sampleIndex: Number(data.sampleIndex),
+					allottedId: data.allottedId,
+					remarks: data.remarks,
+					status: data.status,
+					checks: checksStr,
+					images: imagesStr
+				}
+			});
+		}
 	}
 }

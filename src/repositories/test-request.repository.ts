@@ -25,7 +25,7 @@ export interface CreateTestRequestInput {
 export interface ITestRequestRepository {
 	addTestRequest(data: CreateTestRequestInput, attachments: { fileName: string; filePath: string; fileSize: number }[]): Promise<TestRequest>;
 	getTestRequests(where: any, sortBy: string, sortOrder: string, skip: number, limit: number): Promise<TestRequest[]>;
-	getTestRequestById(id: number): Promise<(TestRequest & { attachments: TestRequestAttachment[] }) | null>;
+	getTestRequestById(id: number): Promise<(TestRequest & { attachments: TestRequestAttachment[]; sampleInspections: any[] }) | null>;
 	updateTestRequest(id: number, data: Prisma.TestRequestUpdateInput): Promise<TestRequest | null>;
 }
 
@@ -82,11 +82,12 @@ export class TestRequestRepository implements ITestRequestRepository {
 		});
 	}
 
-	async getTestRequestById(id: number): Promise<(TestRequest & { attachments: TestRequestAttachment[] }) | null> {
+	async getTestRequestById(id: number): Promise<(TestRequest & { attachments: TestRequestAttachment[]; sampleInspections: any[] }) | null> {
 		return await prisma.testRequest.findUnique({
 			where: { id },
 			include: {
 				attachments: true,
+				sampleInspections: true,
 				requester: {
 					select: { id: true, name: true, username: true, role: true }
 				},

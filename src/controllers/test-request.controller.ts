@@ -105,4 +105,16 @@ export class TestRequestController {
 			data: updatedRequest
 		});
 	}
+
+	saveSampleInspection = async (req: Request, res: Response, next: NextFunction) => {
+		const testRequestId = Number(req.params.id);
+		logger.info('Saving Sample Inspection Report', { id: testRequestId, body: req.body });
+		const result = await this.testRequestService.saveSampleInspection(testRequestId, req.body);
+		logger.info('Saved Sample Inspection Report Successfully', { id: testRequestId, sampleIndex: req.body.sampleIndex });
+		res.status(200).json({
+			success: true,
+			message: 'Saved Sample Inspection Report Successfully',
+			data: result
+		});
+	}
 }

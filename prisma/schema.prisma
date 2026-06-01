@@ -165,6 +165,7 @@ model TestRequest {
 	assignedTo              	User?                   @relation("AssignedTo", fields: [assignedToId], references: [id], onUpdate: NoAction, onDelete: NoAction)
 
 	attachments             	TestRequestAttachment[]
+	sampleInspections       	TestSampleInspection[]
 
 	createdAt               	DateTime                @default(now())
 	updatedAt               	DateTime                @updatedAt
@@ -202,4 +203,23 @@ model TestPlan {
 
 	createdAt			DateTime		@default(now())
 	updatedAt			DateTime		@updatedAt
+}
+
+// ===========================================
+// SAMPLE INSPECTIONS
+// ===========================================
+model TestSampleInspection {
+	id             Int         @id @default(autoincrement())
+	testRequestId  Int
+	testRequest    TestRequest @relation(fields: [testRequestId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+	
+	sampleIndex    Int
+	allottedId     String
+	remarks        String?     @db.NVarChar(Max)
+	status         String      // 'PASSED' | 'FAILED'
+	checks         String      @db.NVarChar(Max) // JSON representation of {checkpointId: 'Yes' | 'No' | 'N.A'}
+	images         String?     @db.NVarChar(Max) // JSON array of base64 images
+	
+	createdAt      DateTime    @default(now())
+	updatedAt      DateTime    @updatedAt
 }

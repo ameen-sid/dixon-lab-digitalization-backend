@@ -72,6 +72,7 @@ export class TestRequestRepository implements ITestRequestRepository {
 			take: limit,
 			include: {
 				attachments: true,
+				sampleInspections: true,
 				requester: {
 					select: { id: true, name: true, username: true, role: true }
 				},

@@ -16,7 +16,7 @@ const v1Router = express.Router();
 
 v1Router.use('/ping', pingRouter);
 v1Router.use('/departments', authenticateToken, requireRole(['Admin']), departmentRouter);
-v1Router.use('/users', authenticateToken, requireRole(['Admin']), userRouter);
+v1Router.use('/users', authenticateToken, requireRole(['Admin', 'Lab Manager', 'Head']), userRouter);
 v1Router.use('/auth', authRouter);
 v1Router.use('/test-types', authenticateToken, requireRole(['Admin']), testTypeRouter);
 v1Router.use('/test-categories', authenticateToken, requireRole(['Admin']), testCategoryRouter);

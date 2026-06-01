@@ -223,3 +223,24 @@ model TestSampleInspection {
 	createdAt      DateTime    @default(now())
 	updatedAt      DateTime    @updatedAt
 }
+
+// ===========================================
+// PLATFORM AVAILABILITY & RESERVATION
+// ===========================================
+model PlatformAvailability {
+	id             Int         @id @default(autoincrement())
+	stationNo      String         // S1 to S14
+	platformNo     String         // P1 to P10
+	isAvailable    Boolean     @default(true)
+	
+	// Occupancy details
+	occupiedBy     String?     // e.g. "REQ-2026-1" or "Requester Name"
+	testRequestId  Int?        // Optional reference to TestRequest
+	modelNo        String?     // e.g. Dixon SMT-X90
+	occupiedUntil  DateTime?   // Date/time until which it is occupied
+	
+	createdAt      DateTime    @default(now())
+	updatedAt      DateTime    @updatedAt
+
+	@@unique([stationNo, platformNo])
+}

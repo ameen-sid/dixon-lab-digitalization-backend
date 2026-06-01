@@ -46,7 +46,13 @@ export const updateTestRequestSchema = z.object({
 		z.number().int().positive(),
 		z.string().regex(/^\d+$/).transform(Number)
 	]).optional()
-});
+}).refine(
+	(data) => {
+		if (data.status === 'REJECTED' && (!data.remarks || data.remarks.trim() === ''))	return false;
+		return true;
+	},
+	{ message: 'Remarks are mandatory when rejecting a request', path: ['remarks'] }
+);
 
 export const testRequestQuerySchema = z.object({
 	page: z.string().optional(),

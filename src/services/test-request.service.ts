@@ -71,6 +71,8 @@ export class TestRequestService implements ITestRequestService {
 			}
 		});
 
+		let resultRecord: any;
+
 		if (existing) {
 			// Merge existing image paths with newly uploaded ones
 			let existingPaths: string[] = [];
@@ -81,7 +83,7 @@ export class TestRequestService implements ITestRequestService {
 			}
 			const mergedPaths = [...existingPaths, ...newImagePaths];
 
-			return await prisma.testSampleInspection.update({
+			resultRecord = await prisma.testSampleInspection.update({
 				where: { id: existing.id },
 				data: {
 					allottedId: data.allottedId,
@@ -92,7 +94,7 @@ export class TestRequestService implements ITestRequestService {
 				}
 			});
 		} else {
-			return await prisma.testSampleInspection.create({
+			resultRecord = await prisma.testSampleInspection.create({
 				data: {
 					testRequestId,
 					sampleIndex: Number(data.sampleIndex),
@@ -104,5 +106,27 @@ export class TestRequestService implements ITestRequestService {
 				}
 			});
 		}
+
+		// Self-healing check: If all samples have completed inspection, transition request to UNDER_TEST
+		try {
+			const req = await prisma.testRequest.findUnique({
+				where: { id: testRequestId }
+			});
+			if (req) {
+				const completedCount = await prisma.testSampleInspection.count({
+					where: { testRequestId }
+				});
+				if (completedCount >= req.sampleQty) {
+					await prisma.testRequest.update({
+						where: { id: testRequestId },
+						data: { status: 'UNDER_TEST' }
+					});
+				}
+			}
+		} catch (err) {
+			console.error('Failed self-healing request status sync on complete inspection:', err);
+		}
+
+		return resultRecord;
 	}
 }

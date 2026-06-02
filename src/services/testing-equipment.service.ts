@@ -7,6 +7,8 @@ export interface ITestingEquipmentService {
 	getTestingEquipments(where: any, sortBy: string, sortOrder: string, skip: number, limit: number): Promise<TestingEquipment[]>;
 	updateTestingEquipment(id: number, name?: string, calibrationDueDate?: Date, status?: string): Promise<TestingEquipment | null>;
 	deleteTestingEquipment(id: number): Promise<Boolean>;
+	reserveEquipment(id: number, testRequestId: number, occupiedBy: string, modelNo: string, occupiedUntil: Date): Promise<TestingEquipment>;
+	releaseEquipment(id: number): Promise<TestingEquipment>;
 }
 
 export class TestingEquipmentService implements ITestingEquipmentService {
@@ -32,5 +34,13 @@ export class TestingEquipmentService implements ITestingEquipmentService {
 
 	async deleteTestingEquipment(id: number): Promise<Boolean> {
 		return await this.testingEquipmentRepository.deleteTestingEquipment(id);
+	}
+
+	async reserveEquipment(id: number, testRequestId: number, occupiedBy: string, modelNo: string, occupiedUntil: Date): Promise<TestingEquipment> {
+		return await this.testingEquipmentRepository.updateOccupancy(id, false, occupiedBy, testRequestId, modelNo, occupiedUntil);
+	}
+
+	async releaseEquipment(id: number): Promise<TestingEquipment> {
+		return await this.testingEquipmentRepository.updateOccupancy(id, true, null, null, null, null);
 	}
 }

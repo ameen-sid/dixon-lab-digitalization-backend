@@ -24,7 +24,7 @@ v1Router.use('/test-categories', authenticateToken, requireRole(['Admin', 'Lab M
 v1Router.use('/test-protocols', authenticateToken, requireRole(['Admin', 'Lab Manager']), testProtocolRouter);
 v1Router.use('/product-parts', authenticateToken, requireRole(['Admin']), productPartRouter);
 v1Router.use('/supplier-customers', authenticateToken, requireRole(['Admin']), supplierCustomerRouter);
-v1Router.use('/testing-equipments', authenticateToken, requireRole(['Admin']), testingEquipmentRouter);
+v1Router.use('/testing-equipments', authenticateToken, requireRole(['Admin', 'Lab Manager']), testingEquipmentRouter);
 v1Router.use('/test-requests', authenticateToken, testRequestRouter);
 v1Router.use('/platform-availability', authenticateToken, requireRole(['Admin', 'Lab Manager']), platformAvailabilityRouter);
 

@@ -64,4 +64,28 @@ export class TestingEquipmentController {
 			data: isDeleted
 		});
 	}
+
+	reserveEquipment = async (req: Request, res: Response, next: NextFunction) => {
+		logger.info('Reserving Testing Equipment', { body: req.body });
+		const { id, testRequestId, occupiedBy, modelNo, occupiedUntil } = req.body;
+		const updatedEquipment = await this.testingEquipmentService.reserveEquipment(Number(id), Number(testRequestId), occupiedBy, modelNo, new Date(occupiedUntil));
+		logger.info('Testing Equipment Reserved Successfully', { updatedEquipment });
+		res.status(200).json({
+			success: true,
+			message: 'Testing Equipment Reserved Successfully',
+			data: updatedEquipment
+		});
+	}
+
+	releaseEquipment = async (req: Request, res: Response, next: NextFunction) => {
+		logger.info('Releasing Testing Equipment', { body: req.body });
+		const { id } = req.body;
+		const updatedEquipment = await this.testingEquipmentService.releaseEquipment(Number(id));
+		logger.info('Testing Equipment Released Successfully', { updatedEquipment });
+		res.status(200).json({
+			success: true,
+			message: 'Testing Equipment Released Successfully',
+			data: updatedEquipment
+		});
+	}
 }

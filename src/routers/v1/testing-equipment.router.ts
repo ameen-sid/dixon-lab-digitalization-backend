@@ -33,4 +33,14 @@ testingEquipmentRouter.delete(
 	asyncHandler(testingEquipmentController.deleteTestingEquipment)
 );
 
+testingEquipmentRouter.post(
+	'/reserve',
+	asyncHandler(testingEquipmentController.reserveEquipment)
+);
+
+testingEquipmentRouter.post(
+	'/release',
+	asyncHandler(testingEquipmentController.releaseEquipment)
+);
+
 export default testingEquipmentRouter;

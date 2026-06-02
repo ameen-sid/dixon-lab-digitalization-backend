@@ -6,6 +6,7 @@ export interface ITestingEquipmentRepository {
 	getTestingEquipments(where: any, sortBy: string, sortOrder: string, skip: number, limit: number): Promise<TestingEquipment[]>;
 	updateTestingEquipment(id: number, name?: string, calibrationDueDate?: Date, status?: string): Promise<TestingEquipment | null>;
 	deleteTestingEquipment(id: number): Promise<Boolean>;
+	updateOccupancy(id: number, isAvailable: boolean, occupiedBy?: string | null, testRequestId?: number | null, modelNo?: string | null, occupiedUntil?: Date | null): Promise<TestingEquipment>;
 }
 
 export class TestingEquipmentRepository implements ITestingEquipmentRepository {
@@ -28,5 +29,18 @@ export class TestingEquipmentRepository implements ITestingEquipmentRepository {
 
 	async deleteTestingEquipment(id: number): Promise<Boolean> {
 		return await prisma.testingEquipment.delete({ where: { id } }) ? true : false;
+	}
+
+	async updateOccupancy(id: number, isAvailable: boolean, occupiedBy?: string | null, testRequestId?: number | null, modelNo?: string | null, occupiedUntil?: Date | null): Promise<TestingEquipment> {
+		return await prisma.testingEquipment.update({
+			where: { id },
+			data: {
+				isAvailable,
+				occupiedBy: isAvailable ? null : occupiedBy,
+				testRequestId: isAvailable ? null : testRequestId,
+				modelNo: isAvailable ? null : modelNo,
+				occupiedUntil: isAvailable ? null : occupiedUntil
+			}
+		});
 	}
 }

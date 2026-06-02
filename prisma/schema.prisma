@@ -128,6 +128,13 @@ model TestingEquipment {
 	calibrationDueDate	DateTime
 	status				String			@default("ACTIVE")
 
+	// Occupancy details, similar to PlatformAvailability
+	isAvailable			Boolean			@default(true)
+	occupiedBy			String?
+	testRequestId		Int?
+	modelNo				String?
+	occupiedUntil		DateTime?
+
 	createdAt			DateTime		@default(now())
 	updatedAt			DateTime		@updatedAt
 }

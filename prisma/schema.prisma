@@ -251,3 +251,18 @@ model PlatformAvailability {
 
 	@@unique([stationNo, platformNo])
 }
+
+// ===========================================
+// RELIABILITY DAILY CHECKSHEET ENTRIES
+// ===========================================
+model ReliabilityChecksheetEntry {
+	id			Int			@id @default(autoincrement())
+	planKey		String
+	date		String
+	data		String		@db.NVarChar(Max) // JSON string of columnId -> value
+
+	createdAt	DateTime	@default(now())
+	updatedAt	DateTime	@updatedAt
+
+	@@unique([planKey, date])
+}

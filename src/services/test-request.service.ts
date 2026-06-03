@@ -107,26 +107,6 @@ export class TestRequestService implements ITestRequestService {
 			});
 		}
 
-		// Self-healing check: If all samples have completed inspection, transition request to UNDER_TEST
-		try {
-			const req = await prisma.testRequest.findUnique({
-				where: { id: testRequestId }
-			});
-			if (req) {
-				const completedCount = await prisma.testSampleInspection.count({
-					where: { testRequestId }
-				});
-				if (completedCount >= req.sampleQty) {
-					await prisma.testRequest.update({
-						where: { id: testRequestId },
-						data: { status: 'UNDER_TEST' }
-					});
-				}
-			}
-		} catch (err) {
-			console.error('Failed self-healing request status sync on complete inspection:', err);
-		}
-
 		return resultRecord;
 	}
 }

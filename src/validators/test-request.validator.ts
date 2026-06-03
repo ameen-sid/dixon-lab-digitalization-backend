@@ -40,7 +40,7 @@ export const createTestRequestSchema = z.object({
 );
 
 export const updateTestRequestSchema = z.object({
-	status: z.enum(['PENDING_APPROVAL', 'UNDER_INSPECTION', 'UNDER_TEST', 'COMPLETED', 'REJECTED']).optional(),
+	status: z.enum(['PENDING_APPROVAL', 'UNDER_INSPECTION', 'UNDER_TEST', 'PASS', 'FAIL', 'PARTIAL', 'COMPLETED', 'REJECTED']).optional(),
 	remarks: z.string().optional(),
 	assignedToId: z.union([
 		z.number().int().positive(),

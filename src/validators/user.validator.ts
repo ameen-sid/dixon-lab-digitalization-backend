@@ -5,7 +5,7 @@ const ROLES = ['Admin', 'CEO', 'Head', 'Lab Manager', 'Engineer', 'Inspector', '
 export const createUserSchema = z.object({
 	name: z.string().min(1, 'Name cannot be empty').trim(),
 	username: z.string().min(3, 'Username cannot be empty').trim(),
-	password: z.string().min(6, 'Password must be at least 6 characters'),
+	password: z.string().min(4, 'Password must be at least 4 characters'),
 	role: z.enum(ROLES as [string, ...string[]]).default('Requester'),
 	departmentId: z.number().nullable().optional()
 });

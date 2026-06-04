@@ -74,9 +74,27 @@ export class CapaRepository {
 		});
 	}
 
+	async findByCapaId(capaId: string) {
+		return await prisma.capaReport.findUnique({
+			where: { capaId },
+			include: {
+				submittedBy: {
+					select: { id: true, name: true, username: true, role: true }
+				}
+			}
+		});
+	}
+
 	async updateStatus(id: number, status: string, remark?: string) {
 		return await prisma.capaReport.update({
 			where: { id },
+			data: { status, remark }
+		});
+	}
+
+	async updateStatusByCapaId(capaId: string, status: string, remark?: string) {
+		return await prisma.capaReport.update({
+			where: { capaId },
 			data: { status, remark }
 		});
 	}

@@ -18,18 +18,42 @@ export class TestingEquipmentService implements ITestingEquipmentService {
 		this.testingEquipmentRepository = testingEquipmentRepository;
 	}
 
+	private checkAndOverrideExpired(eq: TestingEquipment): TestingEquipment;
+	private checkAndOverrideExpired(eq: TestingEquipment | null): TestingEquipment | null;
+	private checkAndOverrideExpired(eq: any): any {
+		if (!eq) return null;
+		const now = new Date();
+		if (eq.calibrationDueDate && new Date(eq.calibrationDueDate) < now) {
+			return { ...eq, status: 'MAINTENANCE' };
+		}
+		return eq;
+	}
+
+	private checkAndOverrideExpiredArray(eqs: TestingEquipment[]): TestingEquipment[] {
+		const now = new Date();
+		return eqs.map(eq => {
+			if (eq.calibrationDueDate && new Date(eq.calibrationDueDate) < now) {
+				return { ...eq, status: 'MAINTENANCE' };
+			}
+			return eq;
+		});
+	}
+
 	async addTestingEquipment(name: string, calibrationDueDate: Date, status?: string): Promise<TestingEquipment> {
 		if (!name) throw new BadRequestError('Testing equipment name is required');
-		return await this.testingEquipmentRepository.addTestingEquipment(name, calibrationDueDate, status);
+		const eq = await this.testingEquipmentRepository.addTestingEquipment(name, calibrationDueDate, status);
+		return this.checkAndOverrideExpired(eq);
 	}
 
 	async getTestingEquipments(where: any, sortBy: string, sortOrder: string, skip: number, limit: number): Promise<TestingEquipment[]> {
-		return await this.testingEquipmentRepository.getTestingEquipments(where, sortBy, sortOrder, skip, limit);
+		const eqs = await this.testingEquipmentRepository.getTestingEquipments(where, sortBy, sortOrder, skip, limit);
+		return this.checkAndOverrideExpiredArray(eqs);
 	}
 
 	async updateTestingEquipment(id: number, name?: string, calibrationDueDate?: Date, status?: string): Promise<TestingEquipment | null> {
 		if (name !== undefined && !name.trim()) throw new BadRequestError('Testing equipment name cannot be empty');
-		return await this.testingEquipmentRepository.updateTestingEquipment(id, name, calibrationDueDate, status);
+		const eq = await this.testingEquipmentRepository.updateTestingEquipment(id, name, calibrationDueDate, status);
+		return this.checkAndOverrideExpired(eq);
 	}
 
 	async deleteTestingEquipment(id: number): Promise<Boolean> {
@@ -37,10 +61,12 @@ export class TestingEquipmentService implements ITestingEquipmentService {
 	}
 
 	async reserveEquipment(id: number, testRequestId: number, occupiedBy: string, modelNo: string, occupiedUntil: Date): Promise<TestingEquipment> {
-		return await this.testingEquipmentRepository.updateOccupancy(id, false, occupiedBy, testRequestId, modelNo, occupiedUntil);
+		const eq = await this.testingEquipmentRepository.updateOccupancy(id, false, occupiedBy, testRequestId, modelNo, occupiedUntil);
+		return this.checkAndOverrideExpired(eq);
 	}
 
 	async releaseEquipment(id: number): Promise<TestingEquipment> {
-		return await this.testingEquipmentRepository.updateOccupancy(id, true, null, null, null, null);
+		const eq = await this.testingEquipmentRepository.updateOccupancy(id, true, null, null, null, null);
+		return this.checkAndOverrideExpired(eq);
 	}
 }

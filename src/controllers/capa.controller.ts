@@ -103,8 +103,14 @@ export class CapaController {
 	};
 
 	getById = async (req: Request, res: Response, next: NextFunction) => {
-		const id = Number(req.params.id);
-		const capa = await this.capaService.getById(id);
+		const idParam = req.params.id as string;
+		let capa;
+		if (idParam && idParam.startsWith('CAPA-')) {
+			capa = await this.capaService.getByCapaId(idParam);
+		} else {
+			const id = Number(idParam);
+			capa = await this.capaService.getById(isNaN(id) ? 0 : id);
+		}
 		if (!capa) {
 			res.status(404).json({ success: false, message: 'CAPA not found' });
 			return;
@@ -113,9 +119,15 @@ export class CapaController {
 	};
 
 	updateStatus = async (req: Request, res: Response, next: NextFunction) => {
-		const id = Number(req.params.id);
+		const idParam = req.params.id as string;
 		const { status, remark } = req.body;
-		const updated = await this.capaService.updateStatus(id, status, remark);
+		let updated;
+		if (idParam && idParam.startsWith('CAPA-')) {
+			updated = await this.capaService.updateStatusByCapaId(idParam, status, remark);
+		} else {
+			const id = Number(idParam);
+			updated = await this.capaService.updateStatus(isNaN(id) ? 0 : id, status, remark);
+		}
 		res.status(200).json({ success: true, message: 'CAPA status updated', data: updated });
 	};
 }

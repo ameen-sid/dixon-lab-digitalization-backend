@@ -10,40 +10,41 @@ export interface CreateCapaInput {
 	preventiveAction: string;
 	targetedDate: string;
 	status: string;
-	owner?: string;
+	owner?: string | null;
 
-	// Extended fields
-	partProduct?: string;
-	modelName?: string;
-	customerSupplier?: string;
-	date?: string;
-	result?: string;
-	title?: string;
-	improvementType?: string;
-	partName?: string;
-	problem?: string;
-	model?: string;
-	defectQty?: string;
-	venue?: string;
-	imageUrl?: string;
-	why1?: string;
-	why2?: string;
-	why3?: string;
-	why4?: string;
-	undetectedWhy1?: string;
-	undetectedWhy2?: string;
-	undetectedWhy3?: string;
-	tempCountermeasure?: string;
-	radicalCountermeasure?: string;
-	inspectionControl?: string;
-	processControl?: string;
-	beforeImprovementImgUrl?: string;
-	afterImprovementImgUrl?: string;
-	preventionImgUrl?: string;
-	remark?: string;
+	// Extended fields — all nullable since they come from FormData as strings
+	partProduct?: string | null;
+	modelName?: string | null;
+	customerSupplier?: string | null;
+	date?: string | null;
+	result?: string | null;
+	title?: string | null;
+	improvementType?: string | null;
+	partName?: string | null;
+	problem?: string | null;
+	model?: string | null;
+	defectQty?: string | null;
+	venue?: string | null;
+	imageUrl?: string | null;
+	why1?: string | null;
+	why2?: string | null;
+	why3?: string | null;
+	why4?: string | null;
+	undetectedWhy1?: string | null;
+	undetectedWhy2?: string | null;
+	undetectedWhy3?: string | null;
+	tempCountermeasure?: string | null;
+	radicalCountermeasure?: string | null;
+	inspectionControl?: string | null;
+	processControl?: string | null;
+	beforeImprovementImgUrl?: string | null;
+	afterImprovementImgUrl?: string | null;
+	preventionImgUrl?: string | null;
+	remark?: string | null;
 
 	submittedById: number;
 }
+
 
 export class CapaRepository {
 	async create(data: CreateCapaInput) {

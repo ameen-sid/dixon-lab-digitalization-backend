@@ -12,6 +12,7 @@ import testingEquipmentRouter from './testing-equipment.router';
 import testRequestRouter from './test-request.router';
 import platformAvailabilityRouter from './platform-availability.router';
 import reliabilityChecksheetRouter from './reliability-checksheet.router';
+import localStorageSyncRouter from './local-storage-sync.router';
 import { authenticateToken, requireRole } from '../../middlewares/auth.middleware';
 
 const v1Router = express.Router();
@@ -29,5 +30,6 @@ v1Router.use('/testing-equipments', authenticateToken, requireRole(['Admin', 'La
 v1Router.use('/test-requests', authenticateToken, testRequestRouter);
 v1Router.use('/platform-availability', authenticateToken, requireRole(['Admin', 'Lab Manager']), platformAvailabilityRouter);
 v1Router.use('/reliability-checksheets', authenticateToken, requireRole(['Admin', 'Lab Manager', 'Inspector']), reliabilityChecksheetRouter);
+v1Router.use('/local-storage-sync', localStorageSyncRouter);
 
 export default v1Router;

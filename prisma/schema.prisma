@@ -266,3 +266,12 @@ model ReliabilityChecksheetEntry {
 
 	@@unique([planKey, date])
 }
+
+// ===========================================
+// LOCAL STORAGE SYNCHRONIZATION
+// ===========================================
+model LocalStorageSync {
+	key			String		@id
+	value		String		@db.NVarChar(Max)
+	updatedAt	DateTime	@updatedAt
+}

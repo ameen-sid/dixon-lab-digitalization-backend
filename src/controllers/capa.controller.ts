@@ -114,8 +114,8 @@ export class CapaController {
 
 	updateStatus = async (req: Request, res: Response, next: NextFunction) => {
 		const id = Number(req.params.id);
-		const { status } = req.body;
-		const updated = await this.capaService.updateStatus(id, status);
+		const { status, remark } = req.body;
+		const updated = await this.capaService.updateStatus(id, status, remark);
 		res.status(200).json({ success: true, message: 'CAPA status updated', data: updated });
 	};
 }

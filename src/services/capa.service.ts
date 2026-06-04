@@ -15,7 +15,7 @@ export class CapaService {
 		return await this.repo.findById(id);
 	}
 
-	async updateStatus(id: number, status: string) {
-		return await this.repo.updateStatus(id, status);
+	async updateStatus(id: number, status: string, remark?: string) {
+		return await this.repo.updateStatus(id, status, remark);
 	}
 }

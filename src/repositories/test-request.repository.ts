@@ -74,7 +74,15 @@ export class TestRequestRepository implements ITestRequestRepository {
 				attachments: true,
 				sampleInspections: true,
 				requester: {
-					select: { id: true, name: true, username: true, role: true }
+					select: { 
+						id: true, 
+						name: true, 
+						username: true, 
+						role: true,
+						department: {
+							select: { id: true, name: true }
+						}
+					}
 				},
 				assignedTo: {
 					select: { id: true, name: true, username: true, role: true }
@@ -90,7 +98,15 @@ export class TestRequestRepository implements ITestRequestRepository {
 				attachments: true,
 				sampleInspections: true,
 				requester: {
-					select: { id: true, name: true, username: true, role: true }
+					select: { 
+						id: true, 
+						name: true, 
+						username: true, 
+						role: true,
+						department: {
+							select: { id: true, name: true }
+						}
+					}
 				},
 				assignedTo: {
 					select: { id: true, name: true, username: true, role: true }

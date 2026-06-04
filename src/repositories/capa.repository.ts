@@ -74,10 +74,10 @@ export class CapaRepository {
 		});
 	}
 
-	async updateStatus(id: number, status: string) {
+	async updateStatus(id: number, status: string, remark?: string) {
 		return await prisma.capaReport.update({
 			where: { id },
-			data: { status }
+			data: { status, remark }
 		});
 	}
 }

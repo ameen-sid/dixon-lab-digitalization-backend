@@ -19,11 +19,11 @@ const v1Router = express.Router();
 
 v1Router.use('/ping', pingRouter);
 v1Router.use('/departments', authenticateToken, requireRole(['Admin']), departmentRouter);
-v1Router.use('/users', authenticateToken, requireRole(['Admin', 'Lab Manager', 'Head']), userRouter);
+v1Router.use('/users', authenticateToken, userRouter);
 v1Router.use('/auth', authRouter);
 v1Router.use('/test-types', authenticateToken, requireRole(['Admin', 'Lab Manager', 'Head', 'Engineer', 'Inspector']), testTypeRouter);
-v1Router.use('/test-categories', authenticateToken, requireRole(['Admin', 'Lab Manager', 'Head', 'Engineer', 'Inspector']), testCategoryRouter);
-v1Router.use('/test-protocols', authenticateToken, requireRole(['Admin', 'Lab Manager', 'Head', 'Engineer', 'Inspector']), testProtocolRouter);
+v1Router.use('/test-categories', authenticateToken, requireRole(['Admin', 'Lab Manager', 'Head', 'Engineer', 'Inspector', 'Requester', 'CEO']), testCategoryRouter);
+v1Router.use('/test-protocols', authenticateToken, requireRole(['Admin', 'Lab Manager', 'Head', 'Engineer', 'Inspector', 'Requester', 'CEO']), testProtocolRouter);
 v1Router.use('/product-parts', authenticateToken, requireRole(['Admin']), productPartRouter);
 v1Router.use('/supplier-customers', authenticateToken, requireRole(['Admin']), supplierCustomerRouter);
 v1Router.use('/testing-equipments', authenticateToken, requireRole(['Admin', 'Lab Manager', 'Head', 'Engineer', 'Inspector', 'Requester', 'CEO']), testingEquipmentRouter);

@@ -74,7 +74,7 @@ export class TestRequestController {
 		const request = await this.testRequestService.getTestRequestById(id);
 		
 		const currentUser = (req as any).user;
-		if (currentUser && currentUser.role?.toLowerCase() === 'requester' && request.requesterId !== currentUser.id) {
+		if (currentUser && currentUser.role?.toLowerCase() === 'requester' && Number(request.requesterId) !== Number(currentUser.id)) {
 			res.status(403).json({
 				success: false,
 				message: 'Access Denied. You are not authorized to view this request.'

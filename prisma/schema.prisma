@@ -35,6 +35,7 @@ model User {
 
 	requests			TestRequest[]	@relation("RequestedBy")
 	assignedRequests 	TestRequest[]	@relation("AssignedTo")
+	capas			    CapaReport[]	@relation("CapaSubmittedBy")
 
 	createdAt			DateTime		@default(now())
 	updatedAt			DateTime		@updatedAt
@@ -274,4 +275,58 @@ model LocalStorageSync {
 	key			String		@id
 	value		String		@db.NVarChar(Max)
 	updatedAt	DateTime	@updatedAt
+}
+
+// ===========================================
+// CAPA REPORTS
+// ===========================================
+model CapaReport {
+	id                     Int      @id @default(autoincrement())
+	capaId                 String   @unique
+
+	relatedRequest         String
+	productName            String
+	nonConformity          String   @db.NVarChar(Max)
+	rootCause              String   @db.NVarChar(Max)
+	correctiveAction       String   @db.NVarChar(Max)
+	preventiveAction       String   @db.NVarChar(Max)
+	targetedDate           String
+	status                 String   @default("OPEN")
+	owner                  String?
+
+	// Extended CAPA form fields
+	partProduct            String?
+	modelName              String?
+	customerSupplier       String?
+	date                   String?
+	result                 String?
+	title                  String?  @db.NVarChar(Max)
+	improvementType        String?
+	partName               String?
+	problem                String?  @db.NVarChar(Max)
+	model                  String?
+	defectQty              String?
+	venue                  String?
+	imageUrl               String?  @db.NVarChar(Max)
+	why1                   String?  @db.NVarChar(Max)
+	why2                   String?  @db.NVarChar(Max)
+	why3                   String?  @db.NVarChar(Max)
+	why4                   String?  @db.NVarChar(Max)
+	undetectedWhy1         String?  @db.NVarChar(Max)
+	undetectedWhy2         String?  @db.NVarChar(Max)
+	undetectedWhy3         String?  @db.NVarChar(Max)
+	tempCountermeasure     String?  @db.NVarChar(Max)
+	radicalCountermeasure  String?  @db.NVarChar(Max)
+	inspectionControl      String?  @db.NVarChar(Max)
+	processControl         String?  @db.NVarChar(Max)
+	beforeImprovementImgUrl String? @db.NVarChar(Max)
+	afterImprovementImgUrl  String? @db.NVarChar(Max)
+	preventionImgUrl        String? @db.NVarChar(Max)
+	remark                  String? @db.NVarChar(Max)
+
+	submittedById          Int
+	submittedBy            User     @relation("CapaSubmittedBy", fields: [submittedById], references: [id], onUpdate: NoAction, onDelete: NoAction)
+
+	createdAt              DateTime @default(now())
+	updatedAt              DateTime @updatedAt
 }

@@ -55,3 +55,36 @@ export const inspectionUpload = multer({
 		}
 	}
 });
+
+// Dedicated upload instance for CAPA report images
+// Stored in uploads/capa/{YYYY-MM-DD}/
+const capaStorage = multer.diskStorage({
+	destination: (req, file, cb) => {
+		const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+		const dir = path.join(process.cwd(), 'uploads', 'capa', today);
+		if (!fs.existsSync(dir)) {
+			fs.mkdirSync(dir, { recursive: true });
+		}
+		cb(null, dir);
+	},
+	filename: (req, file, cb) => {
+		const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+		const ext = path.extname(file.originalname);
+		const baseName = path.basename(file.originalname, ext).replace(/[^a-zA-Z0-9]/g, '_');
+		cb(null, `capa-${baseName}-${uniqueSuffix}${ext}`);
+	}
+});
+
+export const capaUpload = multer({
+	storage: capaStorage,
+	limits: { fileSize: 15 * 1024 * 1024 }, // Max 15MB per file
+	fileFilter: (req, file, cb) => {
+		const allowed = /jpeg|jpg|png|gif|webp/i;
+		const ext = path.extname(file.originalname);
+		if (allowed.test(ext)) {
+			cb(null, true);
+		} else {
+			cb(new Error('Only image files are allowed for CAPA reports.'));
+		}
+	}
+});

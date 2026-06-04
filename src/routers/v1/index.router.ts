@@ -13,6 +13,7 @@ import testRequestRouter from './test-request.router';
 import platformAvailabilityRouter from './platform-availability.router';
 import reliabilityChecksheetRouter from './reliability-checksheet.router';
 import localStorageSyncRouter from './local-storage-sync.router';
+import capaRouter from './capa.router';
 import { authenticateToken, requireRole } from '../../middlewares/auth.middleware';
 
 const v1Router = express.Router();
@@ -31,5 +32,6 @@ v1Router.use('/test-requests', authenticateToken, testRequestRouter);
 v1Router.use('/platform-availability', authenticateToken, requireRole(['Admin', 'Lab Manager']), platformAvailabilityRouter);
 v1Router.use('/reliability-checksheets', authenticateToken, requireRole(['Admin', 'Lab Manager', 'Inspector']), reliabilityChecksheetRouter);
 v1Router.use('/local-storage-sync', localStorageSyncRouter);
+v1Router.use('/capas', authenticateToken, requireRole(['Requester', 'Lab Manager', 'Head', 'Admin']), capaRouter);
 
 export default v1Router;

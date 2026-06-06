@@ -22,7 +22,7 @@ v1Router.use('/ping', pingRouter);
 v1Router.use('/departments', authenticateToken, requireRole(['Admin']), departmentRouter);
 v1Router.use('/users', authenticateToken, userRouter);
 v1Router.use('/auth', authRouter);
-v1Router.use('/test-types', authenticateToken, requireRole(['Admin', 'Lab Manager', 'Head', 'Engineer', 'Inspector']), testTypeRouter);
+v1Router.use('/test-types', authenticateToken, requireRole(['Admin', 'Lab Manager', 'Head', 'Engineer', 'Inspector', 'CEO']), testTypeRouter);
 v1Router.use('/test-categories', authenticateToken, requireRole(['Admin', 'Lab Manager', 'Head', 'Engineer', 'Inspector', 'Requester', 'CEO']), testCategoryRouter);
 v1Router.use('/test-protocols', authenticateToken, requireRole(['Admin', 'Lab Manager', 'Head', 'Engineer', 'Inspector', 'Requester', 'CEO']), testProtocolRouter);
 v1Router.use('/product-parts', authenticateToken, requireRole(['Admin']), productPartRouter);
@@ -30,7 +30,7 @@ v1Router.use('/supplier-customers', authenticateToken, requireRole(['Admin']), s
 v1Router.use('/testing-equipments', authenticateToken, requireRole(['Admin', 'Lab Manager', 'Head', 'Engineer', 'Inspector', 'Requester', 'CEO']), testingEquipmentRouter);
 v1Router.use('/test-requests', authenticateToken, testRequestRouter);
 v1Router.use('/platform-availability', authenticateToken, requireRole(['Admin', 'Lab Manager', 'CEO']), platformAvailabilityRouter);
-v1Router.use('/reliability-checksheets', authenticateToken, requireRole(['Admin', 'Lab Manager', 'Inspector']), reliabilityChecksheetRouter);
+v1Router.use('/reliability-checksheets', authenticateToken, requireRole(['Admin', 'Lab Manager', 'Inspector', 'CEO']), reliabilityChecksheetRouter);
 v1Router.use('/local-storage-sync', localStorageSyncRouter);
 v1Router.use('/capas', authenticateToken, requireRole(['Requester', 'Lab Manager', 'Head', 'Admin', 'CEO']), capaRouter);
 

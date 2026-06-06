@@ -7,7 +7,8 @@ export const createUserSchema = z.object({
 	username: z.string().min(3, 'Username cannot be empty').trim(),
 	password: z.string().min(4, 'Password must be at least 4 characters'),
 	role: z.enum(ROLES as [string, ...string[]]).default('Requester'),
-	departmentId: z.number().nullable().optional()
+	departmentId: z.number().nullable().optional(),
+	email: z.string().email('Invalid email address').trim()
 });
 
 export const updateUserSchema = z.object({
@@ -15,7 +16,8 @@ export const updateUserSchema = z.object({
 	username: z.string().optional(),
 	password: z.string().optional(),
 	role: z.enum(ROLES as [string, ...string[]]).optional(),
-	departmentId: z.number().nullable().optional()
+	departmentId: z.number().nullable().optional(),
+	email: z.string().email('Invalid email address').trim().optional()
 });
 
 export const userQuerySchema = z.object({

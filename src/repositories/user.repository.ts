@@ -21,6 +21,7 @@ export class UserRepository implements IUserRepository {
 				id: true,
 				name: true,
 				username: true,
+				email: true,
 				role: true,
 				createdAt: true,
 				departmentId: true

@@ -20,13 +20,15 @@ export class UserController {
 			return;
 		}
 
+		const email = req.body.email && req.body.email.trim() !== '' ? req.body.email.trim() : null;
 		const hashedPassword = await bcrypt.hash(req.body.password, 10);
 		const newUser = await this.userService.createUser({
 			name: req.body.name,
 			username: req.body.username.toLowerCase().trim(),
 			role: req.body.role,
 			password: hashedPassword,
-			departmentId: req.body.departmentId ? parseInt(req.body.departmentId.toString()) : null
+			departmentId: req.body.departmentId ? parseInt(req.body.departmentId.toString()) : null,
+			email
 		});
 		const { password: _, ...userWithoutPassword } = newUser;
 		logger.info('User Created Successfully', { user: userWithoutPassword });
@@ -75,6 +77,9 @@ export class UserController {
 		if (req.body.role) updateData.role = req.body.role;
 		if (req.body.departmentId !== undefined) {
 			updateData.departmentId = req.body.departmentId ? parseInt(req.body.departmentId.toString()) : null;
+		}
+		if (req.body.email !== undefined) {
+			updateData.email = req.body.email && req.body.email.trim() !== '' ? req.body.email.trim() : null;
 		}
 		if (req.body.password && req.body.password.trim() !== '') {
 			updateData.password = await bcrypt.hash(req.body.password, 10);

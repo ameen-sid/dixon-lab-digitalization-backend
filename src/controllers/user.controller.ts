@@ -40,7 +40,7 @@ export class UserController {
 	getUsers = async (req: Request, res: Response, next: NextFunction) => {
 		logger.info('Fetching Users', { query: req.query });
 		const page = Math.max(1, parseInt(req.query.page as string || '1'));
-		const limit = Math.max(1, parseInt(req.query.limit as string || '10'));
+		const limit = Math.max(1, parseInt(req.query.limit as string || '1000'));
 		const search = (req.query.search as string || '').trim();
 		const role = (req.query.role as string || '').trim();
 		const departmentId = (req.query.departmentId as string || '').trim();

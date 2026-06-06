@@ -23,7 +23,7 @@ export class TestCategoryController {
 	getTestCategories = async (req: Request, res: Response, next: NextFunction) => {
 		logger.info('Fetching Test Categories', { query: req.query });
 		const page = Math.max(1, parseInt(req.query.page as string || '1'));
-		const limit = Math.max(1, parseInt(req.query.limit as string || '10'));
+		const limit = Math.max(1, parseInt(req.query.limit as string || '1000'));
 		const search = (req.query.search as string || '').trim();
 		const sortBy = (req.query.sortBy as string || 'createdAt');
 		const sortOrder = req.query.sortOrder === 'asc' ? 'asc' : 'desc';

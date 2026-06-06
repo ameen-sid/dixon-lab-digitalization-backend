@@ -29,9 +29,9 @@ v1Router.use('/product-parts', authenticateToken, requireRole(['Admin']), produc
 v1Router.use('/supplier-customers', authenticateToken, requireRole(['Admin']), supplierCustomerRouter);
 v1Router.use('/testing-equipments', authenticateToken, requireRole(['Admin', 'Lab Manager', 'Head', 'Engineer', 'Inspector', 'Requester', 'CEO']), testingEquipmentRouter);
 v1Router.use('/test-requests', authenticateToken, testRequestRouter);
-v1Router.use('/platform-availability', authenticateToken, requireRole(['Admin', 'Lab Manager']), platformAvailabilityRouter);
+v1Router.use('/platform-availability', authenticateToken, requireRole(['Admin', 'Lab Manager', 'CEO']), platformAvailabilityRouter);
 v1Router.use('/reliability-checksheets', authenticateToken, requireRole(['Admin', 'Lab Manager', 'Inspector']), reliabilityChecksheetRouter);
 v1Router.use('/local-storage-sync', localStorageSyncRouter);
-v1Router.use('/capas', authenticateToken, requireRole(['Requester', 'Lab Manager', 'Head', 'Admin']), capaRouter);
+v1Router.use('/capas', authenticateToken, requireRole(['Requester', 'Lab Manager', 'Head', 'Admin', 'CEO']), capaRouter);
 
 export default v1Router;

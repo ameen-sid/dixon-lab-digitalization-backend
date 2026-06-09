@@ -52,6 +52,7 @@ model TestType {
 	categories			TestCategory[]
 	protocols			TestProtocol[]
 	testPlans			TestPlan[]
+	testRequests        TestRequest[]
 
 	createdAt			DateTime		@default(now())
 	updatedAt			DateTime		@updatedAt
@@ -173,8 +174,12 @@ model TestRequest {
 	assignedToId            	Int?
 	assignedTo              	User?                   @relation("AssignedTo", fields: [assignedToId], references: [id], onUpdate: NoAction, onDelete: NoAction)
 
+	testTypeId              	Int?
+	testType                	TestType?               @relation(fields: [testTypeId], references: [id], onUpdate: NoAction, onDelete: NoAction)
+
 	attachments             	TestRequestAttachment[]
 	sampleInspections       	TestSampleInspection[]
+	testPlans               	TestPlan[]
 
 	createdAt               	DateTime                @default(now())
 	updatedAt               	DateTime                @updatedAt
@@ -201,6 +206,11 @@ model TestRequestAttachment {
 model TestPlan {
 	id					Int				@id @default(autoincrement())
 
+	testRequestId		Int
+	testRequest			TestRequest		@relation(fields: [testRequestId], references: [id], onDelete: Cascade)
+
+	sampleIndex			Int
+
 	testTypeId			Int
 	testType			TestType		@relation(fields: [testTypeId], references: [id], onUpdate: NoAction, onDelete: NoAction)
 
@@ -210,8 +220,24 @@ model TestPlan {
 	testProtocolId		Int
 	testProtocol		TestProtocol	@relation(fields: [testProtocolId], references: [id], onUpdate: NoAction, onDelete: NoAction)
 
+	stationNo			Int?
+	platformNos			String?			// JSON representation of number[] or platform strings
+	equipmentId			Int?
+	productType			String?
+	numberOfDays		Int?
+	startDate			String?
+	endDate				String?
+	remarks				String?			@db.NVarChar(Max)
+
+	evaluationStatus	String?			// 'PASSED' | 'FAILED'
+	evaluationRemarks	String?			@db.NVarChar(Max)
+	evaluatedAt			DateTime?
+	evaluatedBy			String?
+
 	createdAt			DateTime		@default(now())
 	updatedAt			DateTime		@updatedAt
+
+	@@unique([testRequestId, sampleIndex])
 }
 
 // ===========================================
@@ -255,6 +281,28 @@ model PlatformAvailability {
 }
 
 // ===========================================
+// NABL STATION AVAILABILITY & RESERVATION
+// ===========================================
+model NablStationAvailability {
+	id             Int         @id @default(autoincrement())
+	stationNo      String         // e.g. "NS1" or "1"
+	platformNo     String         // e.g. "P1" to "P10" or "1" to "10"
+	isAvailable    Boolean     @default(true)
+	
+	// Occupancy details
+	occupiedBy     String?     
+	testRequestId  Int?        
+	modelNo        String?     
+	occupiedUntil  DateTime?   
+	
+	createdAt      DateTime    @default(now())
+	updatedAt      DateTime    @updatedAt
+
+	@@unique([stationNo, platformNo])
+}
+
+
+// ===========================================
 // RELIABILITY DAILY CHECKSHEET ENTRIES
 // ===========================================
 model ReliabilityChecksheetEntry {
@@ -267,15 +315,6 @@ model ReliabilityChecksheetEntry {
 	updatedAt	DateTime	@updatedAt
 
 	@@unique([planKey, date])
-}
-
-// ===========================================
-// LOCAL STORAGE SYNCHRONIZATION
-// ===========================================
-model LocalStorageSync {
-	key			String		@id
-	value		String		@db.NVarChar(Max)
-	updatedAt	DateTime	@updatedAt
 }
 
 // ===========================================

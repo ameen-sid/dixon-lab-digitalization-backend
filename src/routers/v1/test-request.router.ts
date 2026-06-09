@@ -1,7 +1,7 @@
 import express from 'express';
 import { TestRequestFactory } from '../../factories/test-request.factory';
 import { asyncHandler } from '../../utils/helpers/async.handler';
-import { upload, inspectionUpload } from '../../middlewares/upload.middleware';
+import { upload, inspectionUpload, reportUpload } from '../../middlewares/upload.middleware';
 import { validateRequestBody, validateQueryParams, validateRequestParams } from '../../validators';
 import { createTestRequestSchema, updateTestRequestSchema, testRequestQuerySchema, testRequestIdParamSchema } from '../../validators/test-request.validator';
 
@@ -46,6 +46,25 @@ testRequestRouter.post(
 	validateRequestParams(testRequestIdParamSchema),
 	inspectionUpload.array('images'),
 	asyncHandler(testRequestController.saveSampleInspection)
+);
+
+testRequestRouter.post(
+	'/:id/sample-reports',
+	validateRequestParams(testRequestIdParamSchema),
+	reportUpload.array('images'),
+	asyncHandler(testRequestController.saveSampleInspection)
+);
+
+testRequestRouter.post(
+	'/:id/test-plans',
+	validateRequestParams(testRequestIdParamSchema),
+	asyncHandler(testRequestController.saveSampleTestPlan)
+);
+
+testRequestRouter.get(
+	'/:id/test-plans',
+	validateRequestParams(testRequestIdParamSchema),
+	asyncHandler(testRequestController.getSampleTestPlans)
 );
 
 export default testRequestRouter;

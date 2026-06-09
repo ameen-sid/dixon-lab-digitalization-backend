@@ -21,6 +21,10 @@ export const createTestRequestSchema = z.object({
 	conformityStatement: z.enum(['Required', 'not Required']).default('not Required'),
 	decisionRule: z.string().nullable().optional(),
 	collectBack: z.enum(['Yes', 'No', 'No_Retain']).default('No'),
+	testTypeId: z.union([
+		z.number().int().positive('Test type ID must be a positive integer'),
+		z.string().regex(/^\d+$/).transform(Number)
+	]).nullable().optional(),
 	requesterId: z.union([
 		z.number().int().positive('Requester ID must be a positive integer'),
 		z.string().regex(/^\d+$/).transform(Number)
@@ -40,7 +44,7 @@ export const createTestRequestSchema = z.object({
 );
 
 export const updateTestRequestSchema = z.object({
-	status: z.enum(['PENDING_APPROVAL', 'UNDER_INSPECTION', 'UNDER_TEST', 'PASS', 'FAIL', 'PARTIAL', 'COMPLETED', 'REJECTED', 'INSPECTION_COMPLETED', 'UNDER_TESTING', 'TESTING_PASSED', 'TESTING_FAILED', 'TESTING_PARTIAL', 'RETEST']).optional(),
+	status: z.enum(['PENDING_APPROVAL', 'UNDER_INSPECTION', 'UNDER_TEST', 'PASS', 'FAIL', 'PARTIAL', 'COMPLETED', 'REJECTED', 'INSPECTION_COMPLETED', 'UNDER_TESTING', 'TESTING_PASSED', 'TESTING_FAILED', 'TESTING_PARTIAL', 'RETEST', 'INSPECTION_FAILED', 'TESTING_COMPLETED', 'FAILED']).optional(),
 	remarks: z.string().optional(),
 	assignedToId: z.union([
 		z.number().int().positive(),

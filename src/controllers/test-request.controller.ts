@@ -118,4 +118,26 @@ export class TestRequestController {
 			data: result
 		});
 	}
+
+	saveSampleTestPlan = async (req: Request, res: Response, next: NextFunction) => {
+		const testRequestId = Number(req.params.id);
+		logger.info('Saving Sample Test Plan', { id: testRequestId, body: req.body });
+		const result = await this.testRequestService.saveSampleTestPlan(testRequestId, req.body);
+		logger.info('Saved Sample Test Plan Successfully', { id: testRequestId, sampleIndex: req.body.sampleIndex });
+		res.status(200).json({
+			success: true,
+			message: 'Saved Sample Test Plan Successfully',
+			data: result
+		});
+	}
+
+	getSampleTestPlans = async (req: Request, res: Response, next: NextFunction) => {
+		const testRequestId = Number(req.params.id);
+		logger.info('Fetching Sample Test Plans', { id: testRequestId });
+		const result = await this.testRequestService.getSampleTestPlans(testRequestId);
+		res.status(200).json({
+			success: true,
+			data: result
+		});
+	}
 }

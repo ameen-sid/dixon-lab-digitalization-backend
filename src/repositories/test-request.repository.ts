@@ -19,13 +19,14 @@ export interface CreateTestRequestInput {
 	conformityStatement: string;
 	decisionRule?: string | null;
 	collectBack: string;
+	testTypeId?: number | string | null;
 	requesterId: number | string;
 }
 
 export interface ITestRequestRepository {
 	addTestRequest(data: CreateTestRequestInput, attachments: { fileName: string; filePath: string; fileSize: number }[]): Promise<TestRequest>;
 	getTestRequests(where: any, sortBy: string, sortOrder: string, skip: number, limit: number): Promise<TestRequest[]>;
-	getTestRequestById(id: number): Promise<(TestRequest & { attachments: TestRequestAttachment[]; sampleInspections: any[] }) | null>;
+	getTestRequestById(id: number): Promise<(TestRequest & { attachments: TestRequestAttachment[]; sampleInspections: any[]; testPlans: any[] }) | null>;
 	updateTestRequest(id: number, data: Prisma.TestRequestUpdateInput): Promise<TestRequest | null>;
 }
 
@@ -57,10 +58,11 @@ export class TestRequestRepository implements ITestRequestRepository {
 				decisionRule: data.decisionRule ? data.decisionRule.trim() : null,
 				collectBack: data.collectBack || 'No',
 				status: 'PENDING_APPROVAL',
+				testTypeId: data.testTypeId ? Number(data.testTypeId) : null,
 				requesterId: Number(data.requesterId),
 				attachments: { create: attachments }
 			},
-			include: { attachments: true }
+			include: { attachments: true, testType: true }
 		});
 	}
 
@@ -73,6 +75,8 @@ export class TestRequestRepository implements ITestRequestRepository {
 			include: {
 				attachments: true,
 				sampleInspections: true,
+				testPlans: true,
+				testType: true,
 				requester: {
 					select: { 
 						id: true, 
@@ -84,19 +88,19 @@ export class TestRequestRepository implements ITestRequestRepository {
 						}
 					}
 				},
-				assignedTo: {
-					select: { id: true, name: true, username: true, role: true }
-				}
+				assignedTo: true,
 			}
 		});
 	}
 
-	async getTestRequestById(id: number): Promise<(TestRequest & { attachments: TestRequestAttachment[]; sampleInspections: any[] }) | null> {
+	async getTestRequestById(id: number): Promise<(TestRequest & { attachments: TestRequestAttachment[]; sampleInspections: any[]; testPlans: any[] }) | null> {
 		return await prisma.testRequest.findUnique({
 			where: { id },
 			include: {
 				attachments: true,
 				sampleInspections: true,
+				testPlans: true,
+				testType: true,
 				requester: {
 					select: { 
 						id: true, 
@@ -119,7 +123,7 @@ export class TestRequestRepository implements ITestRequestRepository {
 		return await prisma.testRequest.update({
 			where: { id },
 			data: { ...data },
-			include: { attachments: true }
+			include: { attachments: true, testType: true }
 		});
 	}
 }

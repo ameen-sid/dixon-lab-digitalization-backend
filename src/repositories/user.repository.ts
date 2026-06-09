@@ -3,10 +3,10 @@ import { User } from '@prisma/client';
 
 export interface IUserRepository {
 	createUser(user: Omit<User, 'id' | 'createdAt' | 'updatedAt'>): Promise<User>;
-	getUsers(where: any, sortBy: string, sortOrder: string, skip: number, limit: number): Promise<Omit<User, 'password' | 'updatedAt'>[]>;
+	getUsers(where: any, sortBy: string, sortOrder: string, skip: number, limit: number): Promise<any[]>;
 	updateUser(id: number, updateData: Partial<Omit<User, 'id' | 'createdAt' | 'updatedAt'>>): Promise<User | null>;	
 	deleteUser(id: number): Promise<Boolean>;
-	getUserByUsername(username: string): Promise<User | null>;
+	getUserByUsername(username: string): Promise<any>;
 }
 
 export class UserRepository implements IUserRepository {
@@ -14,7 +14,7 @@ export class UserRepository implements IUserRepository {
 		return await prisma.user.create({ data: user });
 	}
 
-	async getUsers(where: any, sortBy: string, sortOrder: string, skip: number, limit: number): Promise<Omit<User, 'password' | 'updatedAt'>[]> {
+	async getUsers(where: any, sortBy: string, sortOrder: string, skip: number, limit: number): Promise<any[]> {
 		return await prisma.user.findMany({
 			where,
 			select: {
@@ -24,7 +24,8 @@ export class UserRepository implements IUserRepository {
 				email: true,
 				role: true,
 				createdAt: true,
-				departmentId: true
+				departmentId: true,
+				department: true
 			},
 			orderBy: { [sortBy]: sortOrder },
 			skip,
@@ -43,7 +44,10 @@ export class UserRepository implements IUserRepository {
 		return await prisma.user.delete({ where: { id } }) ? true : false;
 	}
 
-	async getUserByUsername(username: string): Promise<User | null> {
-		return await prisma.user.findUnique({ where: { username } });
+	async getUserByUsername(username: string): Promise<any> {
+		return await prisma.user.findUnique({
+			where: { username },
+			include: { department: true }
+		});
 	}
 }

@@ -4,7 +4,7 @@ import { BadRequestError, ConflictError } from '../utils/errors/app.error';
 
 export interface IUserService {
 	createUser(user: Omit<User, 'id' | 'createdAt' | 'updatedAt'>): Promise<User>;
-	getUsers(where: any, sortBy: string, sortOrder: string, skip: number, limit: number): Promise<Omit<User, 'password' | 'updatedAt'>[]>;
+	getUsers(where: any, sortBy: string, sortOrder: string, skip: number, limit: number): Promise<any[]>;
 	updateUser(id: number, updateData: Partial<Omit<User, 'id' | 'createdAt' | 'updatedAt'>>): Promise<User | null>;
 	deleteUser(id: number): Promise<Boolean>;
 }
@@ -25,7 +25,7 @@ export class UserService implements IUserService {
 		return await this.userRepository.createUser(user);
 	}
 
-	async getUsers(where: any, sortBy: string, sortOrder: string, skip: number, limit: number): Promise<Omit<User, 'password' | 'updatedAt'>[]> {
+	async getUsers(where: any, sortBy: string, sortOrder: string, skip: number, limit: number): Promise<any[]> {
 		return await this.userRepository.getUsers(where, sortBy, sortOrder, skip, limit);
 	}
 

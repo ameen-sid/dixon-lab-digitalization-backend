@@ -5,9 +5,11 @@ import { BadRequestError, NotFoundError } from '../utils/errors/app.error';
 export interface ITestRequestService {
 	addTestRequest(data: CreateTestRequestInput, attachments: { fileName: string; filePath: string; fileSize: number }[]): Promise<TestRequest>;
 	getTestRequests(where: any, sortBy: string, sortOrder: string, skip: number, limit: number): Promise<TestRequest[]>;
-	getTestRequestById(id: number): Promise<TestRequest & { attachments: TestRequestAttachment[]; sampleInspections: any[] }>;
+	getTestRequestById(id: number): Promise<TestRequest & { attachments: TestRequestAttachment[]; sampleInspections: any[]; testPlans: any[] }>;
 	updateTestRequestStatus(id: number, status: string, remarks?: string, assignedToId?: number): Promise<TestRequest | null>;
 	saveSampleInspection(testRequestId: number, data: any, uploadedFiles?: Express.Multer.File[]): Promise<any>;
+	saveSampleTestPlan(testRequestId: number, data: any): Promise<any>;
+	getSampleTestPlans(testRequestId: number): Promise<any[]>;
 }
 
 export class TestRequestService implements ITestRequestService {
@@ -38,7 +40,7 @@ export class TestRequestService implements ITestRequestService {
 		return await this.testRequestRepository.getTestRequests(where, sortBy, sortOrder, skip, limit);
 	}
 
-	async getTestRequestById(id: number): Promise<TestRequest & { attachments: TestRequestAttachment[]; sampleInspections: any[] }> {
+	async getTestRequestById(id: number): Promise<TestRequest & { attachments: TestRequestAttachment[]; sampleInspections: any[]; testPlans: any[] }> {
 		const request = await this.testRequestRepository.getTestRequestById(id);
 		if (!request) throw new NotFoundError('Testing request not found');
 		return request;
@@ -60,9 +62,13 @@ export class TestRequestService implements ITestRequestService {
 		const checksStr = JSON.stringify(data.checks ? JSON.parse(data.checks) : {});
 
 		// Build image paths from newly uploaded files
-		const newImagePaths: string[] = (uploadedFiles || []).map(
-			file => `/uploads/inspection_results/${file.filename}`
-		);
+		const newImagePaths: string[] = (uploadedFiles || []).map(file => {
+			const p = file.path.replace(/\\/g, '/');
+			const i = p.indexOf('uploads/');
+			const status = data.status;
+			const folderName = status === 'UNDER_REVIEW' ? 'reports' : 'inspection';
+			return i !== -1 ? '/' + p.slice(i) : `/uploads/${folderName}/${new Date().toISOString().split('T')[0]}/${file.filename}`;
+		});
 
 		const existing = await prisma.testSampleInspection.findFirst({
 			where: {
@@ -108,5 +114,63 @@ export class TestRequestService implements ITestRequestService {
 		}
 
 		return resultRecord;
+	}
+
+	async saveSampleTestPlan(testRequestId: number, data: any): Promise<any> {
+		const { prisma } = await import('../configs/prisma.config');
+
+		const sampleIndex = Number(data.sampleIndex);
+		const testTypeId = Number(data.testTypeId);
+		const testCategoryId = Number(data.testCategoryId);
+		const testProtocolId = Number(data.testProtocolId);
+
+		const planData: any = {
+			testTypeId,
+			testCategoryId,
+			testProtocolId,
+			productType: data.productType || null,
+			stationNo: data.stationNo ? Number(data.stationNo) : null,
+			platformNos: data.platformNos ? (typeof data.platformNos === 'string' ? data.platformNos : JSON.stringify(data.platformNos)) : null,
+			equipmentId: data.equipmentId ? Number(data.equipmentId) : null,
+			numberOfDays: data.numberOfDays ? Number(data.numberOfDays) : null,
+			startDate: data.startDate || null,
+			endDate: data.endDate || null,
+			remarks: data.remarks || null,
+			evaluationStatus: data.evaluationStatus || null,
+			evaluationRemarks: data.evaluationRemarks || null,
+			evaluatedAt: data.evaluatedAt ? new Date(data.evaluatedAt) : null,
+			evaluatedBy: data.evaluatedBy || null,
+		};
+
+		const existing = await prisma.testPlan.findUnique({
+			where: {
+				testRequestId_sampleIndex: {
+					testRequestId,
+					sampleIndex
+				}
+			}
+		});
+
+		if (existing) {
+			return await prisma.testPlan.update({
+				where: { id: existing.id },
+				data: planData
+			});
+		} else {
+			return await prisma.testPlan.create({
+				data: {
+					testRequestId,
+					sampleIndex,
+					...planData
+				}
+			});
+		}
+	}
+
+	async getSampleTestPlans(testRequestId: number): Promise<any[]> {
+		const { prisma } = await import('../configs/prisma.config');
+		return await prisma.testPlan.findMany({
+			where: { testRequestId }
+		});
 	}
 }

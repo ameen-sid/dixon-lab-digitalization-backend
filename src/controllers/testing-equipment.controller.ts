@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import logger from '../configs/logger.config';
 import { ITestingEquipmentService } from '../services/testing-equipment.service';
+import { SystemLogFactory } from '../factories/system-log.factory';
 
 export class TestingEquipmentController {
 
@@ -13,6 +14,19 @@ export class TestingEquipmentController {
 		logger.info('Creating Testing Equipment', { body: req.body });
 		const newEquipment = await this.testingEquipmentService.addTestingEquipment(req.body.name, req.body.calibrationDueDate, req.body.status);
 		logger.info('Testing Equipment Created Successfully', { newEquipment });
+
+		try {
+			await SystemLogFactory.getSystemLogService().createLog({
+				action: 'CREATE',
+				entity: 'TestingEquipment',
+				entityId: String(newEquipment.id),
+				details: JSON.stringify({ name: newEquipment.name, calibrationDueDate: newEquipment.calibrationDueDate, status: newEquipment.status }),
+				performedBy: (req as any).user?.username || 'Unknown'
+			});
+		} catch (logErr) {
+			logger.error('Failed to create system log for TestingEquipment creation', logErr);
+		}
+
 		res.status(201).json({
 			success: true,
 			message: 'Testing Equipment Created Successfully',
@@ -45,8 +59,45 @@ export class TestingEquipmentController {
 
 	updateTestingEquipment = async (req: Request, res: Response, next: NextFunction) => {
 		logger.info('Updating Testing Equipment', { body: req.body, id: req.params.id });
+
+		let oldEquipment: any = null;
+		try {
+			const items = await this.testingEquipmentService.getTestingEquipments({ id: Number(req.params.id) }, 'id', 'asc', 0, 1);
+			if (items && items[0]) {
+				oldEquipment = {
+					name: items[0].name,
+					calibrationDueDate: items[0].calibrationDueDate,
+					status: items[0].status
+				};
+			}
+		} catch (e) {
+			logger.warn('Failed to fetch testing equipment before update', e);
+		}
+
 		const updatedEquipment = await this.testingEquipmentService.updateTestingEquipment(Number(req.params.id), req.body.name, req.body.calibrationDueDate, req.body.status);
 		logger.info('Updated Testing Equipment Successfully', { updatedEquipment });
+
+		if (updatedEquipment) {
+			try {
+				await SystemLogFactory.getSystemLogService().createLog({
+					action: 'UPDATE',
+					entity: 'TestingEquipment',
+					entityId: String(updatedEquipment.id),
+					details: JSON.stringify({
+						old: oldEquipment || {},
+						new: {
+							name: updatedEquipment.name,
+							calibrationDueDate: updatedEquipment.calibrationDueDate,
+							status: updatedEquipment.status
+						}
+					}),
+					performedBy: (req as any).user?.username || 'Unknown'
+				});
+			} catch (logErr) {
+				logger.error('Failed to create system log for TestingEquipment update', logErr);
+			}
+		}
+
 		res.status(200).json({
 			success: true,
 			message: 'Updated Testing Equipment Successfully',
@@ -56,8 +107,32 @@ export class TestingEquipmentController {
 
 	deleteTestingEquipment = async (req: Request, res: Response, next: NextFunction) => {
 		logger.info('Deleting Testing Equipment', { id: req.params.id });
+
+		let oldName = '';
+		try {
+			const items = await this.testingEquipmentService.getTestingEquipments({ id: Number(req.params.id) }, 'id', 'asc', 0, 1);
+			if (items && items[0]) {
+				oldName = items[0].name;
+			}
+		} catch (e) {
+			logger.warn('Failed to fetch testing equipment before delete', e);
+		}
+
 		const isDeleted = await this.testingEquipmentService.deleteTestingEquipment(Number(req.params.id));
 		logger.info('Deleted Testing Equipment Successfully', { isDeleted });
+
+		try {
+			await SystemLogFactory.getSystemLogService().createLog({
+				action: 'DELETE',
+				entity: 'TestingEquipment',
+				entityId: String(req.params.id),
+				details: JSON.stringify({ name: oldName, success: isDeleted }),
+				performedBy: (req as any).user?.username || 'Unknown'
+			});
+		} catch (logErr) {
+			logger.error('Failed to create system log for TestingEquipment deletion', logErr);
+		}
+
 		res.status(200).json({
 			success: true,
 			message: 'Deleted Testing Equipment Successfully',

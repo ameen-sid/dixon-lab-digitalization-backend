@@ -2,6 +2,7 @@ import bcrypt from 'bcrypt';
 import { Request, Response, NextFunction } from 'express';
 import logger from '../configs/logger.config';
 import { IUserService } from '../services/user.service';
+import { SystemLogFactory } from '../factories/system-log.factory';
 
 export class UserController {
 
@@ -32,6 +33,19 @@ export class UserController {
 		});
 		const { password: _, ...userWithoutPassword } = newUser;
 		logger.info('User Created Successfully', { user: userWithoutPassword });
+
+		try {
+			await SystemLogFactory.getSystemLogService().createLog({
+				action: 'CREATE',
+				entity: 'User',
+				entityId: String(newUser.id),
+				details: JSON.stringify({ username: newUser.username, name: newUser.name, role: newUser.role }),
+				performedBy: (req as any).user?.username || 'Unknown'
+			});
+		} catch (logErr) {
+			logger.error('Failed to create system log for User creation', logErr);
+		}
+
 		res.status(201).json({
 			success: true,
 			message: 'User Created Successfully',
@@ -71,6 +85,24 @@ export class UserController {
 
 	updateUser = async (req: Request, res: Response, next: NextFunction) => {
 		logger.info('Updating User', { body: req.body, id: req.params.id });
+
+		const existingUsers = await this.userService.getUsers({ id: Number(req.params.id) }, 'id', 'asc', 0, 1);
+		const currentUser = existingUsers[0];
+		if (!currentUser) {
+			res.status(404).json({
+				success: false,
+				message: 'User not found'
+			});
+			return;
+		}
+
+		const oldUser = {
+			username: currentUser.username,
+			name: currentUser.name,
+			role: currentUser.role,
+			email: currentUser.email
+		};
+
 		const updateData: any = {};
 		if (req.body.name) updateData.name = req.body.name;
 		if (req.body.username) updateData.username = req.body.username.toLowerCase().trim();
@@ -88,16 +120,6 @@ export class UserController {
 		const targetRole = req.body.role;
 		const targetDeptId = req.body.departmentId;
 		if (targetRole !== undefined || targetDeptId !== undefined) {
-			const existingUsers = await this.userService.getUsers({ id: Number(req.params.id) }, 'id', 'asc', 0, 1);
-			const currentUser = existingUsers[0];
-			if (!currentUser) {
-				res.status(404).json({
-					success: false,
-					message: 'User not found'
-				});
-				return;
-			}
-
 			const finalRole = targetRole !== undefined ? targetRole : currentUser.role;
 			const finalDeptId = targetDeptId !== undefined
 				? (targetDeptId ? parseInt(targetDeptId.toString()) : null)
@@ -123,6 +145,27 @@ export class UserController {
 
 		const { password: _, ...userWithoutPassword } = updatedUser;
 		logger.info('User Updated Successfully', { updatedUser: userWithoutPassword });
+
+		try {
+			await SystemLogFactory.getSystemLogService().createLog({
+				action: 'UPDATE',
+				entity: 'User',
+				entityId: String(updatedUser.id),
+				details: JSON.stringify({
+					old: oldUser,
+					new: {
+						username: updatedUser.username,
+						name: updatedUser.name,
+						role: updatedUser.role,
+						email: updatedUser.email
+					}
+				}),
+				performedBy: (req as any).user?.username || 'Unknown'
+			});
+		} catch (logErr) {
+			logger.error('Failed to create system log for User update', logErr);
+		}
+
 		res.status(200).json({
 			success: true,
 			message: 'User Updated Successfully',
@@ -132,12 +175,36 @@ export class UserController {
 
 	deleteUser = async (req: Request, res: Response, next: NextFunction) => {
 		logger.info('Deleting User', { id: req.params.id });
-		const user = await this.userService.deleteUser(Number(req.params.id));
-		logger.info('User Deleted Successfully', { data: user });
+		
+		let userToDelete: any = null;
+		try {
+			const users = await this.userService.getUsers({ id: Number(req.params.id) }, 'id', 'asc', 0, 1);
+			userToDelete = users[0];
+		} catch (err) {
+			logger.error('Failed to fetch user details before deletion', err);
+		}
+
+		const isDeleted = await this.userService.deleteUser(Number(req.params.id));
+		logger.info('User Deleted Successfully', { data: isDeleted });
+
+		if (isDeleted) {
+			try {
+				await SystemLogFactory.getSystemLogService().createLog({
+					action: 'DELETE',
+					entity: 'User',
+					entityId: String(req.params.id),
+					details: JSON.stringify({ username: userToDelete?.username || 'Unknown', name: userToDelete?.name || 'Unknown' }),
+					performedBy: (req as any).user?.username || 'Unknown'
+				});
+			} catch (logErr) {
+				logger.error('Failed to create system log for User deletion', logErr);
+			}
+		}
+
 		res.status(200).json({
 			success: true,
 			message: 'User Deleted Successfully',
-			data: user
+			data: isDeleted
 		});
 	}
 }

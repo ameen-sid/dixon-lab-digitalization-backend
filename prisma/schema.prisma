@@ -370,3 +370,16 @@ model CapaReport {
 	createdAt              DateTime @default(now())
 	updatedAt              DateTime @updatedAt
 }
+
+// ===========================================
+// SYSTEM LOGS
+// ===========================================
+model SystemLog {
+	id             Int      @id @default(autoincrement())
+	action         String   // e.g. "CREATE", "UPDATE", "DELETE"
+	entity         String   // e.g. "Department", "User", "TestType", "TestCategory", "TestProtocol", "ProductPart", "SupplierCustomer", "TestingEquipment"
+	entityId       String?  // ID of the affected resource
+	details        String?  @db.NVarChar(Max) // JSON or text description of the changes/data
+	performedBy    String?  // Username of the user performing the action
+	createdAt      DateTime @default(now())
+}

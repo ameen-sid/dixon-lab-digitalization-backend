@@ -1,9 +1,10 @@
 {
 	"name": "dixon-lab-request-testing-approval-management-system",
 	"version": "1.0.0",
-	"main": "index.js",
+	"main": "server.js",
 	"scripts": {
-		"start": "ts-node src/server.ts",
+		"start": "node dist/server.js",
+		"build": "tsc",
 		"dev": "nodemon src/server.ts",
 		"seed:admin": "ts-node scripts/add-admin.ts"
 	},

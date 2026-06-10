@@ -20,6 +20,11 @@ testingEquipmentRouter.get(
 	asyncHandler(testingEquipmentController.getTestingEquipments)
 );
 
+testingEquipmentRouter.get(
+	'/weekly-analytics',
+	asyncHandler(testingEquipmentController.getWeeklyAnalytics)
+);
+
 testingEquipmentRouter.patch(
 	'/:id',
 	validateRequestParams(testingEquipmentIdParamSchema),

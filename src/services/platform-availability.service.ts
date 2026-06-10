@@ -14,6 +14,7 @@ export interface IPlatformAvailabilityService {
 	): Promise<PlatformAvailability[]>;
 	releasePlatforms(stationNo: number, platformNos: number[]): Promise<PlatformAvailability[]>;
 	releaseByRequest(testRequestId: number): Promise<any>;
+	getWeeklyPlatformAnalytics(monthStr: string, station?: string, platform?: string, testTypeId?: string): Promise<any[]>;
 }
 
 export class PlatformAvailabilityService implements IPlatformAvailabilityService {
@@ -21,6 +22,14 @@ export class PlatformAvailabilityService implements IPlatformAvailabilityService
 
 	constructor(repo: IPlatformAvailabilityRepository) {
 		this.repo = repo;
+	}
+
+	async getWeeklyPlatformAnalytics(monthStr: string, station?: string, platform?: string, testTypeId?: string): Promise<any[]> {
+		const [year, month] = monthStr.split('-').map(Number);
+		const stationNo = station ? Number(station) : undefined;
+		const platformNo = platform ? Number(platform) : undefined;
+		const parsedTestTypeId = testTypeId ? Number(testTypeId) : undefined;
+		return await this.repo.getWeeklyPlatformAnalytics(year, month - 1, stationNo, platformNo, parsedTestTypeId);
 	}
 
 	async getAllPlatforms(): Promise<PlatformAvailability[]> {

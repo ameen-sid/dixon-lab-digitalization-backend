@@ -88,4 +88,25 @@ export class NablStationAvailabilityController {
 			next(error);
 		}
 	}
+
+	getWeeklyAnalytics = async (req: Request, res: Response, next: NextFunction) => {
+		try {
+			const month = req.query.month as string;
+			const station = req.query.station as string;
+			const platform = req.query.platform as string;
+			const testTypeId = req.query.testTypeId as string;
+			if (!month) {
+				throw new BadRequestError('Month query parameter (YYYY-MM) is required.');
+			}
+			logger.info('Fetching weekly NABL platform availability analytics', { month, station, platform, testTypeId });
+			const analytics = await this.service.getWeeklyPlatformAnalytics(month, station, platform, testTypeId);
+			res.status(200).json({
+				success: true,
+				message: 'Fetched NABL Platform Availability Analytics Successfully',
+				data: analytics
+			});
+		} catch (error) {
+			next(error);
+		}
+	}
 }

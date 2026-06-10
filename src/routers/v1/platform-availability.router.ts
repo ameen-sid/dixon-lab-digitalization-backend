@@ -6,6 +6,11 @@ const platformAvailabilityRouter = express.Router();
 const controller = PlatformAvailabilityFactory.getController();
 
 platformAvailabilityRouter.get(
+	'/weekly-analytics',
+	asyncHandler(controller.getWeeklyAnalytics)
+);
+
+platformAvailabilityRouter.get(
 	'/',
 	asyncHandler(controller.getAllPlatforms)
 );

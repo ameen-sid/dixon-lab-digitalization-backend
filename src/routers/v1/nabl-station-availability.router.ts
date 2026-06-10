@@ -10,6 +10,11 @@ nablStationAvailabilityRouter.get(
 	asyncHandler(controller.getAllPlatforms)
 );
 
+nablStationAvailabilityRouter.get(
+	'/weekly-analytics',
+	asyncHandler(controller.getWeeklyAnalytics)
+);
+
 nablStationAvailabilityRouter.post(
 	'/toggle',
 	asyncHandler(controller.togglePlatform)

@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import logger from '../configs/logger.config';
 import { ITestingEquipmentService } from '../services/testing-equipment.service';
 import { SystemLogFactory } from '../factories/system-log.factory';
+import { BadRequestError } from '../utils/errors/app.error';
 
 export class TestingEquipmentController {
 
@@ -162,5 +163,25 @@ export class TestingEquipmentController {
 			message: 'Testing Equipment Released Successfully',
 			data: updatedEquipment
 		});
+	}
+
+	getWeeklyAnalytics = async (req: Request, res: Response, next: NextFunction) => {
+		try {
+			const month = req.query.month as string;
+			const equipmentId = req.query.equipmentId as string;
+			const testTypeId = req.query.testTypeId as string;
+			if (!month) {
+				throw new BadRequestError('Month query parameter (YYYY-MM) is required.');
+			}
+			logger.info('Fetching weekly testing equipment utilization analytics', { month, equipmentId, testTypeId });
+			const analytics = await this.testingEquipmentService.getWeeklyEquipmentAnalytics(month, equipmentId, testTypeId);
+			res.status(200).json({
+				success: true,
+				message: 'Fetched Testing Equipment Analytics Successfully',
+				data: analytics
+			});
+		} catch (error) {
+			next(error);
+		}
 	}
 }

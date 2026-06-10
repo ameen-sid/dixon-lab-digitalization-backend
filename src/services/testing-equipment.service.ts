@@ -9,6 +9,7 @@ export interface ITestingEquipmentService {
 	deleteTestingEquipment(id: number): Promise<Boolean>;
 	reserveEquipment(id: number, testRequestId: number, occupiedBy: string, modelNo: string, occupiedUntil: Date): Promise<TestingEquipment>;
 	releaseEquipment(id: number): Promise<TestingEquipment>;
+	getWeeklyEquipmentAnalytics(monthStr: string, equipmentId?: string, testTypeId?: string): Promise<any[]>;
 }
 
 export class TestingEquipmentService implements ITestingEquipmentService {
@@ -68,5 +69,12 @@ export class TestingEquipmentService implements ITestingEquipmentService {
 	async releaseEquipment(id: number): Promise<TestingEquipment> {
 		const eq = await this.testingEquipmentRepository.updateOccupancy(id, true, null, null, null, null);
 		return this.checkAndOverrideExpired(eq);
+	}
+
+	async getWeeklyEquipmentAnalytics(monthStr: string, equipmentId?: string, testTypeId?: string): Promise<any[]> {
+		const [year, month] = monthStr.split('-').map(Number);
+		const eqId = equipmentId ? Number(equipmentId) : undefined;
+		const parsedTestTypeId = testTypeId ? Number(testTypeId) : undefined;
+		return await this.testingEquipmentRepository.getWeeklyEquipmentAnalytics(year, month - 1, eqId, parsedTestTypeId);
 	}
 }

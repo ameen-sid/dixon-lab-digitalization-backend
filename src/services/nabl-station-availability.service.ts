@@ -14,6 +14,7 @@ export interface INablStationAvailabilityService {
 	): Promise<NablStationAvailability[]>;
 	releasePlatforms(stationNo: number, platformNos: number[]): Promise<NablStationAvailability[]>;
 	releaseByRequest(testRequestId: number): Promise<any>;
+	getWeeklyPlatformAnalytics(monthStr: string, station?: string, platform?: string, testTypeId?: string): Promise<any[]>;
 }
 
 export class NablStationAvailabilityService implements INablStationAvailabilityService {
@@ -74,5 +75,13 @@ export class NablStationAvailabilityService implements INablStationAvailabilityS
 
 	async releaseByRequest(testRequestId: number): Promise<any> {
 		return await this.repo.releaseByRequest(testRequestId);
+	}
+
+	async getWeeklyPlatformAnalytics(monthStr: string, station?: string, platform?: string, testTypeId?: string): Promise<any[]> {
+		const [year, month] = monthStr.split('-').map(Number);
+		const stationNo = station ? Number(station) : undefined;
+		const platformNo = platform ? Number(platform) : undefined;
+		const parsedTestTypeId = testTypeId ? Number(testTypeId) : undefined;
+		return await this.repo.getWeeklyPlatformAnalytics(year, month - 1, stationNo, platformNo, parsedTestTypeId);
 	}
 }

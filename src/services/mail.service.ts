@@ -27,9 +27,6 @@ export class MailService implements IMailService {
 					auth: {
 						user: SMTP_USER,
 						pass: SMTP_PASS,
-					},
-					tls: {
-						rejectUnauthorized: false
 					}
 				});
 				logger.info(`MailService SMTP transporter initialized for host: ${SMTP_HOST}:${SMTP_PORT}`);

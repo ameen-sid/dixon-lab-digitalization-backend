@@ -1,6 +1,8 @@
 import { TestRequest, TestRequestAttachment } from '@prisma/client';
 import { ITestRequestRepository, CreateTestRequestInput } from '../repositories/test-request.repository';
 import { BadRequestError, NotFoundError } from '../utils/errors/app.error';
+import { NotificationService } from './notification.service';
+import logger from '../configs/logger.config';
 
 export interface ITestRequestService {
 	addTestRequest(data: CreateTestRequestInput, attachments: { fileName: string; filePath: string; fileSize: number }[]): Promise<TestRequest>;
@@ -33,7 +35,15 @@ export class TestRequestService implements ITestRequestService {
 
 		if (data.witnessRequired === 'Yes' && !data.witnessPersonDetails)	throw new BadRequestError('Witness details are required when witness is requested');
 		if (data.conformityStatement === 'Required' && !data.decisionRule)	throw new BadRequestError('Decision rule is required when conformity statement is requested');
-		return await this.testRequestRepository.addTestRequest(data, attachments);
+		
+		const newRequest = await this.testRequestRepository.addTestRequest(data, attachments);
+		
+		// Send notification
+		NotificationService.notifyHeadsNewRequest(newRequest.id).catch(err => {
+			logger.error('Failed to send new request notification to Heads', err);
+		});
+
+		return newRequest;
 	}
 
 	async getTestRequests(where: any, sortBy: string, sortOrder: string, skip: number, limit: number): Promise<TestRequest[]> {
@@ -50,11 +60,28 @@ export class TestRequestService implements ITestRequestService {
 		const request = await this.testRequestRepository.getTestRequestById(id);
 		if (!request) throw new NotFoundError('Testing request not found');
 
+		const oldStatus = request.status;
+		const oldAssignedToId = request.assignedToId;
+
 		const updateData: any = { status };
 		if (remarks !== undefined) updateData.remarks = remarks;
 		if (assignedToId !== undefined) updateData.assignedToId = assignedToId;
 
-		return await this.testRequestRepository.updateTestRequest(id, updateData);
+		const updatedRequest = await this.testRequestRepository.updateTestRequest(id, updateData);
+
+		// Trigger notifications
+		if (status !== oldStatus) {
+			NotificationService.handleRequestStatusChange(id, oldStatus, status, remarks).catch(err => {
+				logger.error('Failed to handle request status change notification', err);
+			});
+		}
+		if (assignedToId !== undefined && assignedToId !== oldAssignedToId) {
+			NotificationService.handleEngineerAssignment(id, assignedToId).catch(err => {
+				logger.error('Failed to send engineer assignment notification', err);
+			});
+		}
+
+		return updatedRequest;
 	}
 
 	async saveSampleInspection(testRequestId: number, data: any, uploadedFiles?: Express.Multer.File[]): Promise<any> {
@@ -113,6 +140,11 @@ export class TestRequestService implements ITestRequestService {
 			});
 		}
 
+		// Trigger notification
+		NotificationService.handleInspectionSubmission(testRequestId, Number(data.sampleIndex), data.status).catch(err => {
+			logger.error('Failed to trigger inspection submission notification', err);
+		});
+
 		return resultRecord;
 	}
 
@@ -151,20 +183,52 @@ export class TestRequestService implements ITestRequestService {
 			}
 		});
 
+		let resultPlan: any;
+
 		if (existing) {
-			return await prisma.testPlan.update({
+			resultPlan = await prisma.testPlan.update({
 				where: { id: existing.id },
 				data: planData
 			});
+
+			// If request is in RETEST status, notify about reconfiguration of retesting plan
+			const request = await prisma.testRequest.findUnique({ where: { id: testRequestId } });
+			if (request && request.status === 'RETEST') {
+				NotificationService.handleRetestingPlanConfig(testRequestId, testTypeId).catch(err => {
+					logger.error('Failed to trigger retesting plan config notification', err);
+				});
+			}
 		} else {
-			return await prisma.testPlan.create({
+			resultPlan = await prisma.testPlan.create({
 				data: {
 					testRequestId,
 					sampleIndex,
 					...planData
 				}
 			});
+
+			const request = await prisma.testRequest.findUnique({ where: { id: testRequestId } });
+			if (request) {
+				if (request.status === 'RETEST') {
+					NotificationService.handleRetestingPlanConfig(testRequestId, testTypeId).catch(err => {
+						logger.error('Failed to trigger retesting plan config notification', err);
+					});
+				} else {
+					NotificationService.handleTestPlanCreation(testRequestId, testTypeId).catch(err => {
+						logger.error('Failed to trigger test plan creation notification', err);
+					});
+				}
+			}
 		}
+
+		// Notify evaluation submission if status is provided
+		if (data.evaluationStatus) {
+			NotificationService.handleEvaluationSubmission(testRequestId, sampleIndex, data.evaluationStatus).catch(err => {
+				logger.error('Failed to trigger evaluation submission notification', err);
+			});
+		}
+
+		return resultPlan;
 	}
 
 	async getSampleTestPlans(testRequestId: number): Promise<any[]> {

@@ -6,6 +6,7 @@ import v2Router from './routers/v2/index.router';
 import { appErrorHandler, prismaErrorHandler, genericErrorHandler } from './middlewares/error.middleware';
 import { attachCorrelationIdMiddleware } from './middlewares/correlation.middleware';
 import logger from './configs/logger.config';
+import { NotificationService } from './services/notification.service';
 
 const app = express();
 
@@ -25,4 +26,7 @@ app.use(genericErrorHandler);
 app.listen(serverConfig.PORT, async () => {
 	logger.info(`Server is running on http://localhost:${serverConfig.PORT}`);
 	logger.info(`Press Ctrl+C to stop the server.`);
+	
+	// Start periodic notification checks (last day of test plan, calibration due, missing test plan alerts)
+	NotificationService.startPeriodicChecks();
 });

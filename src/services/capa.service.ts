@@ -1,10 +1,16 @@
 import { CapaRepository, CreateCapaInput } from '../repositories/capa.repository';
+import { NotificationService } from './notification.service';
+import logger from '../configs/logger.config';
 
 export class CapaService {
 	constructor(private repo: CapaRepository) {}
 
 	async create(data: CreateCapaInput) {
-		return await this.repo.create(data);
+		const capa = await this.repo.create(data);
+		NotificationService.notifyHeadsOfCapaSubmission(capa.id).catch(err => {
+			logger.error('Failed to trigger CAPA submission notification', err);
+		});
+		return capa;
 	}
 
 	async getAll(where: any = {}) {
@@ -20,10 +26,22 @@ export class CapaService {
 	}
 
 	async updateStatus(id: number, status: string, remark?: string) {
-		return await this.repo.updateStatus(id, status, remark);
+		const result = await this.repo.updateStatus(id, status, remark);
+		if (status === 'CLOSED') {
+			NotificationService.notifyOwnerOfCapaClosure(result.id).catch(err => {
+				logger.error('Failed to trigger CAPA closure notification', err);
+			});
+		}
+		return result;
 	}
 
 	async updateStatusByCapaId(capaId: string, status: string, remark?: string) {
-		return await this.repo.updateStatusByCapaId(capaId, status, remark);
+		const result = await this.repo.updateStatusByCapaId(capaId, status, remark);
+		if (status === 'CLOSED') {
+			NotificationService.notifyOwnerOfCapaClosure(result.id).catch(err => {
+				logger.error('Failed to trigger CAPA closure notification', err);
+			});
+		}
+		return result;
 	}
 }

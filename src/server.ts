@@ -13,10 +13,22 @@ const app = express();
 app.use(express.json());
 app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 
+// Serve frontend static files in production
+const frontendDistPath = path.join(process.cwd(), '../frontend/dist');
+app.use(express.static(frontendDistPath));
+
 // Registering all the routers and their corresponding routes without app server object.
 app.use(attachCorrelationIdMiddleware);
 app.use('/api/v1', v1Router);
 app.use('/api/v2', v2Router);
+
+// Fallback to index.html for React routing
+app.get('*', (req, res, next) => {
+	if (req.url.startsWith('/api') || req.url.startsWith('/uploads')) {
+		return next();
+	}
+	res.sendFile(path.join(frontendDistPath, 'index.html'));
+});
 
 // Add the error handler middleware
 app.use(appErrorHandler);

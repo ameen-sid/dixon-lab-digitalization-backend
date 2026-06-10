@@ -23,7 +23,7 @@ app.use('/api/v1', v1Router);
 app.use('/api/v2', v2Router);
 
 // Fallback to index.html for React routing
-app.get('*', (req, res, next) => {
+app.get('*all', (req, res, next) => {
 	if (req.url.startsWith('/api') || req.url.startsWith('/uploads')) {
 		return next();
 	}

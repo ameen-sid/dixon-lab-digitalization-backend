@@ -69,6 +69,17 @@ export class TestRequestService implements ITestRequestService {
 
 		const updatedRequest = await this.testRequestRepository.updateTestRequest(id, updateData);
 
+		// Trigger immediate resource cleanup if transition is to a finalized/retest/failed state
+		if (status !== oldStatus && ['COMPLETED', 'FAILED', 'RETEST', 'REJECTED', 'INSPECTION_FAILED', 'TESTING_FAILED'].includes(status)) {
+			import('./resource-cleanup.service').then(({ ResourceCleanupService }) => {
+				ResourceCleanupService.cleanupExpiredResources().catch(err => {
+					logger.error('Failed to run immediate resource cleanup:', err);
+				});
+			}).catch(err => {
+				logger.error('Failed to import ResourceCleanupService for immediate cleanup:', err);
+			});
+		}
+
 		// Trigger notifications
 		if (status !== oldStatus) {
 			NotificationService.handleRequestStatusChange(id, oldStatus, status, remarks).catch(err => {
@@ -174,12 +185,10 @@ export class TestRequestService implements ITestRequestService {
 			evaluatedBy: data.evaluatedBy || null,
 		};
 
-		const existing = await prisma.testPlan.findUnique({
+		const existing = await prisma.testPlan.findFirst({
 			where: {
-				testRequestId_sampleIndex: {
-					testRequestId,
-					sampleIndex
-				}
+				testRequestId,
+				sampleIndex
 			}
 		});
 

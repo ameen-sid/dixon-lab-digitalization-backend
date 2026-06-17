@@ -7,6 +7,7 @@ import { appErrorHandler, prismaErrorHandler, genericErrorHandler } from './midd
 import { attachCorrelationIdMiddleware } from './middlewares/correlation.middleware';
 import logger from './configs/logger.config';
 import { NotificationService } from './services/notification.service';
+import { ResourceCleanupService } from './services/resource-cleanup.service';
 
 const app = express();
 
@@ -41,4 +42,7 @@ app.listen(serverConfig.PORT, async () => {
 	
 	// Start periodic notification checks (last day of test plan, calibration due, missing test plan alerts)
 	NotificationService.startPeriodicChecks();
+
+	// Start periodic resource cleanup checks (release expired platforms & equipment reservations)
+	ResourceCleanupService.startPeriodicCleanup();
 });

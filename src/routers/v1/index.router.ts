@@ -30,9 +30,9 @@ v1Router.use('/product-parts', authenticateToken, requireRole(['Admin']), produc
 v1Router.use('/supplier-customers', authenticateToken, requireRole(['Admin']), supplierCustomerRouter);
 v1Router.use('/testing-equipments', authenticateToken, requireRole(['Admin', 'Lab Manager', 'Head', 'Engineer', 'Inspector', 'Requester', 'CEO']), testingEquipmentRouter);
 v1Router.use('/test-requests', authenticateToken, testRequestRouter);
-v1Router.use('/platform-availability', authenticateToken, requireRole(['Admin', 'Lab Manager', 'CEO', 'Engineer']), platformAvailabilityRouter);
-v1Router.use('/nabl-station-availability', authenticateToken, requireRole(['Admin', 'Lab Manager', 'CEO']), nablStationAvailabilityRouter);
-v1Router.use('/reliability-checksheets', authenticateToken, requireRole(['Admin', 'Lab Manager', 'Inspector', 'CEO']), reliabilityChecksheetRouter);
+v1Router.use('/platform-availability', authenticateToken, requireRole(['Admin', 'Lab Manager', 'CEO', 'Engineer', 'Head']), platformAvailabilityRouter);
+v1Router.use('/nabl-station-availability', authenticateToken, requireRole(['Admin', 'Lab Manager', 'CEO', 'Head']), nablStationAvailabilityRouter);
+v1Router.use('/reliability-checksheets', authenticateToken, requireRole(['Admin', 'Lab Manager', 'Inspector', 'CEO', 'Head']), reliabilityChecksheetRouter);
 v1Router.use('/capas', authenticateToken, requireRole(['Requester', 'Lab Manager', 'Head', 'Admin', 'CEO']), capaRouter);
 v1Router.use('/system-logs', authenticateToken, requireRole(['Admin']), systemLogRouter);
 

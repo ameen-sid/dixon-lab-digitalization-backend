@@ -481,11 +481,36 @@ export class NotificationService {
 	}
 
 	static async runPeriodicChecks() {
-		logger.info('Starting daily system notification checks...');
+		logger.info('Starting daily system checks...');
+		await this.updateExpiredEquipmentStatus();
 		await this.checkLastDayOfTestPlans();
 		await this.checkEquipmentCalibrationDue();
 		await this.checkTestPlanNotCreatedAlerts();
-		logger.info('Completed daily system notification checks.');
+		logger.info('Completed daily system checks.');
+	}
+
+	static async updateExpiredEquipmentStatus() {
+		try {
+			const now = new Date();
+			const result = await prisma.testingEquipment.updateMany({
+				where: {
+					calibrationDueDate: {
+						lt: now
+					},
+					status: {
+						not: 'CALIBRATION_DUE'
+					}
+				},
+				data: {
+					status: 'CALIBRATION_DUE'
+				}
+			});
+			if (result.count > 0) {
+				logger.info(`Cron Job: Changed status of ${result.count} expired equipment(s) to CALIBRATION_DUE.`);
+			}
+		} catch (err) {
+			logger.error('Error in updateExpiredEquipmentStatus cron job:', err);
+		}
 	}
 
 	// 8. On last day of test plan -> notify managers

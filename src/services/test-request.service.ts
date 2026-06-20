@@ -172,23 +172,24 @@ export class TestRequestService implements ITestRequestService {
 		const testCategoryId = Number(data.testCategoryId);
 		const testProtocolId = Number(data.testProtocolId);
 
-		const planData: any = {
-			testTypeId,
-			testCategoryId,
-			testProtocolId,
-			productType: data.productType || null,
-			stationNo: data.stationNo ? Number(data.stationNo) : null,
-			platformNos: data.platformNos ? (typeof data.platformNos === 'string' ? data.platformNos : JSON.stringify(data.platformNos)) : null,
-			equipmentId: data.equipmentId ? Number(data.equipmentId) : null,
-			numberOfDays: data.numberOfDays ? Number(data.numberOfDays) : null,
-			startDate: data.startDate || null,
-			endDate: data.endDate || null,
-			remarks: data.remarks || null,
-			evaluationStatus: data.evaluationStatus || null,
-			evaluationRemarks: data.evaluationRemarks || null,
-			evaluatedAt: data.evaluatedAt ? new Date(data.evaluatedAt) : null,
-			evaluatedBy: data.evaluatedBy || null,
-		};
+		const planData: any = {};
+		if (data.testTypeId !== undefined) planData.testTypeId = Number(data.testTypeId);
+		if (data.testCategoryId !== undefined) planData.testCategoryId = Number(data.testCategoryId);
+		if (data.testProtocolId !== undefined) planData.testProtocolId = Number(data.testProtocolId);
+		if (data.productType !== undefined) planData.productType = data.productType || null;
+		if (data.stationNo !== undefined) planData.stationNo = data.stationNo ? Number(data.stationNo) : null;
+		if (data.platformNos !== undefined) {
+			planData.platformNos = data.platformNos ? (typeof data.platformNos === 'string' ? data.platformNos : JSON.stringify(data.platformNos)) : null;
+		}
+		if (data.equipmentId !== undefined) planData.equipmentId = data.equipmentId ? Number(data.equipmentId) : null;
+		if (data.numberOfDays !== undefined) planData.numberOfDays = data.numberOfDays ? Number(data.numberOfDays) : null;
+		if (data.startDate !== undefined) planData.startDate = data.startDate || null;
+		if (data.endDate !== undefined) planData.endDate = data.endDate || null;
+		if (data.remarks !== undefined) planData.remarks = data.remarks || null;
+		if (data.evaluationStatus !== undefined) planData.evaluationStatus = data.evaluationStatus || null;
+		if (data.evaluationRemarks !== undefined) planData.evaluationRemarks = data.evaluationRemarks || null;
+		if (data.evaluatedAt !== undefined) planData.evaluatedAt = data.evaluatedAt ? new Date(data.evaluatedAt) : null;
+		if (data.evaluatedBy !== undefined) planData.evaluatedBy = data.evaluatedBy || null;
 
 		const existing = await prisma.testPlan.findFirst({
 			where: {
@@ -208,16 +209,34 @@ export class TestRequestService implements ITestRequestService {
 			// If request is in RETEST status, notify about reconfiguration of retesting plan
 			const request = await prisma.testRequest.findUnique({ where: { id: testRequestId } });
 			if (request && request.status === 'RETEST') {
-				NotificationService.handleRetestingPlanConfig(testRequestId, testTypeId).catch(err => {
+				const currentTestTypeId = planData.testTypeId || existing.testTypeId;
+				NotificationService.handleRetestingPlanConfig(testRequestId, currentTestTypeId).catch(err => {
 					logger.error('Failed to trigger retesting plan config notification', err);
 				});
 			}
 		} else {
+			const fullPlanData = {
+				testTypeId: planData.testTypeId || 0,
+				testCategoryId: planData.testCategoryId || 0,
+				testProtocolId: planData.testProtocolId || 0,
+				productType: planData.productType || null,
+				stationNo: planData.stationNo || null,
+				platformNos: planData.platformNos || null,
+				equipmentId: planData.equipmentId || null,
+				numberOfDays: planData.numberOfDays || null,
+				startDate: planData.startDate || null,
+				endDate: planData.endDate || null,
+				remarks: planData.remarks || null,
+				evaluationStatus: planData.evaluationStatus || null,
+				evaluationRemarks: planData.evaluationRemarks || null,
+				evaluatedAt: planData.evaluatedAt || null,
+				evaluatedBy: planData.evaluatedBy || null,
+			};
 			resultPlan = await prisma.testPlan.create({
 				data: {
 					testRequestId,
 					sampleIndex,
-					...planData
+					...fullPlanData
 				}
 			});
 

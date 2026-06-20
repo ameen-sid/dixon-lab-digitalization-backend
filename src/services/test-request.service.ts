@@ -169,8 +169,6 @@ export class TestRequestService implements ITestRequestService {
 
 		const sampleIndex = Number(data.sampleIndex);
 		const testTypeId = Number(data.testTypeId);
-		const testCategoryId = Number(data.testCategoryId);
-		const testProtocolId = Number(data.testProtocolId);
 
 		const planData: any = {};
 		if (data.testTypeId !== undefined) planData.testTypeId = Number(data.testTypeId);

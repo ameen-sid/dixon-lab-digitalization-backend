@@ -65,7 +65,12 @@ export class TestRequestService implements ITestRequestService {
 
 		const updateData: any = { status };
 		if (remarks !== undefined) updateData.remarks = remarks;
-		if (assignedToId !== undefined) updateData.assignedToId = assignedToId;
+		if (assignedToId !== undefined) {
+			updateData.assignedToId = assignedToId;
+			if (assignedToId !== oldAssignedToId) {
+				updateData.assignedDate = new Date();
+			}
+		}
 
 		const updatedRequest = await this.testRequestRepository.updateTestRequest(id, updateData);
 

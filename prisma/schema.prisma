@@ -183,6 +183,7 @@ model TestRequest {
 
 	createdAt               	DateTime                @default(now())
 	updatedAt               	DateTime                @updatedAt
+	assignedDate            	DateTime?
 }
 
 // ===========================================

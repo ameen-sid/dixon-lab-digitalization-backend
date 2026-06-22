@@ -102,16 +102,43 @@ export class TestRequestService implements ITestRequestService {
 
 	async saveSampleInspection(testRequestId: number, data: any, uploadedFiles?: Express.Multer.File[]): Promise<any> {
 		const { prisma } = await import('../configs/prisma.config');
-		const checksStr = JSON.stringify(data.checks ? JSON.parse(data.checks) : {});
+		
+		const checksObj = data.checks ? JSON.parse(data.checks) : {};
+		
+		// 1. Process files
+		const beforeNewPaths: string[] = [];
+		const afterNewPaths: string[] = [];
+		const generalInspectionNewPaths: string[] = [];
 
-		// Build image paths from newly uploaded files
-		const newImagePaths: string[] = (uploadedFiles || []).map(file => {
+		(uploadedFiles || []).forEach(file => {
 			const p = file.path.replace(/\\/g, '/');
 			const i = p.indexOf('uploads/');
-			const status = data.status;
-			const folderName = status === 'UNDER_REVIEW' ? 'reports' : 'inspection';
-			return i !== -1 ? '/' + p.slice(i) : `/uploads/${folderName}/${new Date().toISOString().split('T')[0]}/${file.filename}`;
+			const isReport = data.status === 'UNDER_REVIEW';
+			const folderName = isReport ? 'reports' : 'inspection';
+			const pathStr = i !== -1 ? '/' + p.slice(i) : `/uploads/${folderName}/${new Date().toISOString().split('T')[0]}/${file.filename}`;
+
+			if (file.fieldname === 'beforeImages') {
+				beforeNewPaths.push(pathStr);
+			} else if (file.fieldname === 'afterImages') {
+				afterNewPaths.push(pathStr);
+			} else {
+				// Fallback or inspection images
+				generalInspectionNewPaths.push(pathStr);
+			}
 		});
+
+		// 2. Merge existing images stored in checks JSON
+		const beforeExisting = Array.isArray(checksObj.beforeImages) ? checksObj.beforeImages : [];
+		const afterExisting = Array.isArray(checksObj.afterImages) ? checksObj.afterImages : [];
+
+		const beforeMerged = [...beforeExisting, ...beforeNewPaths];
+		const afterMerged = [...afterExisting, ...afterNewPaths];
+
+		// Save them inside checks JSON
+		checksObj.beforeImages = beforeMerged;
+		checksObj.afterImages = afterMerged;
+
+		const checksStr = JSON.stringify(checksObj);
 
 		const existing = await prisma.testSampleInspection.findFirst({
 			where: {
@@ -120,18 +147,30 @@ export class TestRequestService implements ITestRequestService {
 			}
 		});
 
-		let resultRecord: any;
-
-		if (existing) {
-			// Merge existing image paths with newly uploaded ones
+		let mergedPaths: string[] = [];
+		if (data.status === 'UNDER_REVIEW' || [
+			'COMPLETED',
+			'TESTING_PASSED',
+			'TESTING_FAILED',
+			'TESTING_PARTIAL',
+			'PASSED',
+			'FAILED'
+		].includes((data.status || '').toUpperCase())) {
+			mergedPaths = [...beforeMerged, ...afterMerged];
+		} else {
+			// Inspection images
 			let existingPaths: string[] = [];
 			try {
-				existingPaths = existing.images ? JSON.parse(existing.images) : [];
+				existingPaths = existing && existing.images ? JSON.parse(existing.images) : [];
 			} catch {
 				existingPaths = [];
 			}
-			const mergedPaths = [...existingPaths, ...newImagePaths];
+			mergedPaths = [...existingPaths, ...generalInspectionNewPaths];
+		}
 
+		let resultRecord: any;
+
+		if (existing) {
 			resultRecord = await prisma.testSampleInspection.update({
 				where: { id: existing.id },
 				data: {
@@ -151,7 +190,7 @@ export class TestRequestService implements ITestRequestService {
 					remarks: data.remarks,
 					status: data.status,
 					checks: checksStr,
-					images: JSON.stringify(newImagePaths)
+					images: JSON.stringify(mergedPaths)
 				}
 			});
 		}

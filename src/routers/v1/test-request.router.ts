@@ -51,7 +51,7 @@ testRequestRouter.post(
 testRequestRouter.post(
 	'/:id/sample-reports',
 	validateRequestParams(testRequestIdParamSchema),
-	reportUpload.array('images'),
+	reportUpload.any(),
 	asyncHandler(testRequestController.saveSampleInspection)
 );
 

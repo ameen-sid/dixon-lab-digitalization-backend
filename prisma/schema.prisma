@@ -234,11 +234,12 @@ model TestPlan {
 	evaluationRemarks	String?			@db.NVarChar(Max)
 	evaluatedAt			DateTime?
 	evaluatedBy			String?
+	submittedBy			String?
 
 	createdAt			DateTime		@default(now())
 	updatedAt			DateTime		@updatedAt
 
-	@@unique([testRequestId, sampleIndex])
+	sampleInspections	TestSampleInspection[]
 }
 
 // ===========================================
@@ -256,6 +257,9 @@ model TestSampleInspection {
 	checks         String      @db.NVarChar(Max) // JSON representation of {checkpointId: 'Yes' | 'No' | 'N.A'}
 	images         String?     @db.NVarChar(Max) // JSON array of base64 images
 	
+	testPlanId     Int?
+	testPlan       TestPlan?   @relation(fields: [testPlanId], references: [id], onUpdate: NoAction, onDelete: NoAction)
+
 	createdAt      DateTime    @default(now())
 	updatedAt      DateTime    @updatedAt
 }

@@ -11,6 +11,7 @@ export interface ITestRequestService {
 	updateTestRequestStatus(id: number, status: string, remarks?: string, assignedToId?: number): Promise<TestRequest | null>;
 	saveSampleInspection(testRequestId: number, data: any, uploadedFiles?: Express.Multer.File[]): Promise<any>;
 	saveSampleTestPlan(testRequestId: number, data: any): Promise<any>;
+	deleteSampleTestPlan(testRequestId: number, planId: number): Promise<any>;
 	getSampleTestPlans(testRequestId: number): Promise<any[]>;
 }
 
@@ -127,43 +128,52 @@ export class TestRequestService implements ITestRequestService {
 			}
 		});
 
-		// 2. Merge existing images stored in checks JSON
+		const testPlanId = data.testPlanId ? Number(data.testPlanId) : null;
+		const isTestReport = data.status === 'UNDER_REVIEW' || !!testPlanId;
+
 		const beforeExisting = Array.isArray(checksObj.beforeImages) ? checksObj.beforeImages : [];
 		const afterExisting = Array.isArray(checksObj.afterImages) ? checksObj.afterImages : [];
 
 		const beforeMerged = [...beforeExisting, ...beforeNewPaths];
 		const afterMerged = [...afterExisting, ...afterNewPaths];
 
-		// Save them inside checks JSON
-		checksObj.beforeImages = beforeMerged;
-		checksObj.afterImages = afterMerged;
+		if (isTestReport) {
+			// Save them inside checks JSON
+			checksObj.beforeImages = beforeMerged;
+			checksObj.afterImages = afterMerged;
+		}
 
 		const checksStr = JSON.stringify(checksObj);
 
 		const existing = await prisma.testSampleInspection.findFirst({
-			where: {
-				testRequestId,
-				sampleIndex: Number(data.sampleIndex)
-			}
+			where: testPlanId 
+				? { testPlanId } 
+				: {
+					testRequestId,
+					sampleIndex: Number(data.sampleIndex),
+					testPlanId: null
+				}
 		});
 
 		let mergedPaths: string[] = [];
-		if (data.status === 'UNDER_REVIEW' || [
-			'COMPLETED',
-			'TESTING_PASSED',
-			'TESTING_FAILED',
-			'TESTING_PARTIAL',
-			'PASSED',
-			'FAILED'
-		].includes((data.status || '').toUpperCase())) {
+
+		if (isTestReport) {
 			mergedPaths = [...beforeMerged, ...afterMerged];
 		} else {
 			// Inspection images
 			let existingPaths: string[] = [];
-			try {
-				existingPaths = existing && existing.images ? JSON.parse(existing.images) : [];
-			} catch {
-				existingPaths = [];
+			if (data.existingImages) {
+				try {
+					existingPaths = typeof data.existingImages === 'string' ? JSON.parse(data.existingImages) : data.existingImages;
+				} catch {
+					existingPaths = [];
+				}
+			} else {
+				try {
+					existingPaths = existing && existing.images ? JSON.parse(existing.images) : [];
+				} catch {
+					existingPaths = [];
+				}
 			}
 			mergedPaths = [...existingPaths, ...generalInspectionNewPaths];
 		}
@@ -186,6 +196,7 @@ export class TestRequestService implements ITestRequestService {
 				data: {
 					testRequestId,
 					sampleIndex: Number(data.sampleIndex),
+					testPlanId,
 					allottedId: data.allottedId,
 					remarks: data.remarks,
 					status: data.status,
@@ -193,6 +204,16 @@ export class TestRequestService implements ITestRequestService {
 					images: JSON.stringify(mergedPaths)
 				}
 			});
+		}
+
+		if (testPlanId) {
+			const submittedByName = checksObj.submittedByName || data.submittedBy || data.engineerName;
+			if (submittedByName) {
+				await prisma.testPlan.update({
+					where: { id: testPlanId },
+					data: { submittedBy: submittedByName }
+				});
+			}
 		}
 
 		// Trigger notification
@@ -228,12 +249,12 @@ export class TestRequestService implements ITestRequestService {
 		if (data.evaluatedAt !== undefined) planData.evaluatedAt = data.evaluatedAt ? new Date(data.evaluatedAt) : null;
 		if (data.evaluatedBy !== undefined) planData.evaluatedBy = data.evaluatedBy || null;
 
-		const existing = await prisma.testPlan.findFirst({
-			where: {
-				testRequestId,
-				sampleIndex
-			}
-		});
+		let existing: any = null;
+		if (data.id) {
+			existing = await prisma.testPlan.findUnique({
+				where: { id: Number(data.id) }
+			});
+		}
 
 		let resultPlan: any;
 
@@ -305,6 +326,21 @@ export class TestRequestService implements ITestRequestService {
 		const { prisma } = await import('../configs/prisma.config');
 		return await prisma.testPlan.findMany({
 			where: { testRequestId }
+		});
+	}
+
+	async deleteSampleTestPlan(testRequestId: number, planId: number): Promise<any> {
+		const { prisma } = await import('../configs/prisma.config');
+
+		const existing = await prisma.testPlan.findUnique({
+			where: { id: planId }
+		});
+		if (!existing || existing.testRequestId !== testRequestId) {
+			throw new NotFoundError('Test plan not found');
+		}
+
+		return await prisma.testPlan.delete({
+			where: { id: planId }
 		});
 	}
 }

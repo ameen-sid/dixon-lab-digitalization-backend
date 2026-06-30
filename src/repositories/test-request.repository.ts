@@ -75,7 +75,11 @@ export class TestRequestRepository implements ITestRequestRepository {
 			include: {
 				attachments: true,
 				sampleInspections: true,
-				testPlans: true,
+				testPlans: {
+					include: {
+						testType: true
+					}
+				},
 				testType: true,
 				requester: {
 					select: { 
@@ -99,7 +103,11 @@ export class TestRequestRepository implements ITestRequestRepository {
 			include: {
 				attachments: true,
 				sampleInspections: true,
-				testPlans: true,
+				testPlans: {
+					include: {
+						testType: true
+					}
+				},
 				testType: true,
 				requester: {
 					select: { 

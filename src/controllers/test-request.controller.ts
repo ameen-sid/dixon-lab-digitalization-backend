@@ -140,4 +140,17 @@ export class TestRequestController {
 			data: result
 		});
 	}
+
+	deleteSampleTestPlan = async (req: Request, res: Response, next: NextFunction) => {
+		const testRequestId = Number(req.params.id);
+		const planId = Number(req.params.planId);
+		logger.info('Deleting Sample Test Plan', { testRequestId, planId });
+		const result = await this.testRequestService.deleteSampleTestPlan(testRequestId, planId);
+		logger.info('Deleted Sample Test Plan Successfully', { testRequestId, planId });
+		res.status(200).json({
+			success: true,
+			message: 'Deleted Sample Test Plan Successfully',
+			data: result
+		});
+	}
 }

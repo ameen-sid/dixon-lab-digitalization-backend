@@ -67,4 +67,10 @@ testRequestRouter.get(
 	asyncHandler(testRequestController.getSampleTestPlans)
 );
 
+testRequestRouter.delete(
+	'/:id/test-plans/:planId',
+	validateRequestParams(testRequestIdParamSchema),
+	asyncHandler(testRequestController.deleteSampleTestPlan)
+);
+
 export default testRequestRouter;

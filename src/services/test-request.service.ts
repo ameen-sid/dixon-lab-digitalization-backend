@@ -13,6 +13,7 @@ export interface ITestRequestService {
 	saveSampleTestPlan(testRequestId: number, data: any): Promise<any>;
 	deleteSampleTestPlan(testRequestId: number, planId: number): Promise<any>;
 	getSampleTestPlans(testRequestId: number): Promise<any[]>;
+	downloadTearDownReport(id: number, planId: number): Promise<Buffer>;
 }
 
 export class TestRequestService implements ITestRequestService {
@@ -342,5 +343,29 @@ export class TestRequestService implements ITestRequestService {
 		return await prisma.testPlan.delete({
 			where: { id: planId }
 		});
+	}
+
+	async downloadTearDownReport(id: number, planId: number): Promise<Buffer> {
+		const { prisma } = await import('../configs/prisma.config');
+		const { generateTearDownExcel } = await import('../utils/helpers/excel.generator');
+
+		const request = await this.testRequestRepository.getTestRequestById(id);
+		if (!request) throw new NotFoundError('Testing request not found');
+
+		const plan = await prisma.testPlan.findUnique({
+			where: { id: planId },
+			include: {
+				testType: true,
+				testProtocol: true
+			}
+		});
+		if (!plan) throw new NotFoundError('Test plan not found');
+
+		const checksheets = await prisma.reliabilityChecksheetEntry.findMany({
+			where: { planKey: `${id}-plan-${planId}` },
+			orderBy: { date: 'asc' }
+		});
+
+		return await generateTearDownExcel(request, plan, checksheets);
 	}
 }

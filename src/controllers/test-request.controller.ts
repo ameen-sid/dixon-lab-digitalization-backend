@@ -153,4 +153,15 @@ export class TestRequestController {
 			data: result
 		});
 	}
+
+	downloadTearDownReport = async (req: Request, res: Response, next: NextFunction) => {
+		const testRequestId = Number(req.params.id);
+		const planId = Number(req.params.planId);
+		logger.info('Generating Tear Down Excel Report', { testRequestId, planId });
+		const buffer = await this.testRequestService.downloadTearDownReport(testRequestId, planId);
+		
+		res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+		res.setHeader('Content-Disposition', `attachment; filename="Tear_Down_Report_REQ_${testRequestId}_Plan_${planId}.xlsx"`);
+		res.status(200).send(buffer);
+	}
 }

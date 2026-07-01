@@ -73,4 +73,10 @@ testRequestRouter.delete(
 	asyncHandler(testRequestController.deleteSampleTestPlan)
 );
 
+testRequestRouter.get(
+	'/:id/test-plans/:planId/tear-down-report',
+	validateRequestParams(testRequestIdParamSchema),
+	asyncHandler(testRequestController.downloadTearDownReport)
+);
+
 export default testRequestRouter;

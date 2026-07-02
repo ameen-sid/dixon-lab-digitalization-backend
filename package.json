@@ -4,7 +4,7 @@
 	"main": "server.js",
 	"scripts": {
 		"start": "node dist/server.js",
-		"build": "tsc",
+		"build": "prisma generate && tsc",
 		"dev": "nodemon src/server.ts",
 		"seed:admin": "ts-node scripts/add-admin.ts"
 	},

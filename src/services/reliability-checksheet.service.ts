@@ -26,7 +26,10 @@ export class ReliabilityChecksheetService implements IReliabilityChecksheetServi
 	async getEntriesByPlan(planKey: string): Promise<any[]> {
 		if (!planKey) throw new BadRequestError('Plan key is required');
 		const entries = await this.reliabilityChecksheetRepository.getEntriesByPlan(planKey);
-		return entries.map(entry => {
+		
+		const mergedMap = new Map<string, any>();
+		
+		for (const entry of entries) {
 			let parsedData: any = entry.data;
 			while (typeof parsedData === 'string') {
 				try {
@@ -37,14 +40,33 @@ export class ReliabilityChecksheetService implements IReliabilityChecksheetServi
 					break;
 				}
 			}
-			return {
-				id: entry.id,
-				planKey: entry.planKey,
-				date: entry.date,
-				data: parsedData,
-				createdAt: entry.createdAt,
-				updatedAt: entry.updatedAt
-			};
-		});
+			
+			const existing = mergedMap.get(entry.date);
+			if (existing) {
+				const mergedData = entry.updatedAt > existing.updatedAt 
+					? { ...existing.data, ...parsedData } 
+					: { ...parsedData, ...existing.data };
+				
+				mergedMap.set(entry.date, {
+					id: entry.id,
+					planKey: entry.planKey,
+					date: entry.date,
+					data: mergedData,
+					createdAt: entry.createdAt > existing.createdAt ? entry.createdAt : existing.createdAt,
+					updatedAt: entry.updatedAt > existing.updatedAt ? entry.updatedAt : existing.updatedAt
+				});
+			} else {
+				mergedMap.set(entry.date, {
+					id: entry.id,
+					planKey: entry.planKey,
+					date: entry.date,
+					data: parsedData,
+					createdAt: entry.createdAt,
+					updatedAt: entry.updatedAt
+				});
+			}
+		}
+		
+		return Array.from(mergedMap.values()).sort((a, b) => a.date.localeCompare(b.date));
 	}
 }

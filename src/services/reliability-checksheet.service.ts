@@ -27,11 +27,15 @@ export class ReliabilityChecksheetService implements IReliabilityChecksheetServi
 		if (!planKey) throw new BadRequestError('Plan key is required');
 		const entries = await this.reliabilityChecksheetRepository.getEntriesByPlan(planKey);
 		return entries.map(entry => {
-			let parsedData = {};
-			try {
-				parsedData = JSON.parse(entry.data);
-			} catch (e) {
-				console.error('Failed to parse checksheet entry data JSON:', e);
+			let parsedData: any = entry.data;
+			while (typeof parsedData === 'string') {
+				try {
+					const temp = JSON.parse(parsedData);
+					if (temp === parsedData) break;
+					parsedData = temp;
+				} catch (e) {
+					break;
+				}
 			}
 			return {
 				id: entry.id,
